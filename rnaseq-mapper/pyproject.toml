@@ -1,0 +1,20 @@
+[project]
+name = "rnaseq-mapper"
+version = "1.0.0"
+description = "Virome analysis — RNA-seq read mapping"
+readme = "README.md"
+authors = [
+]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "matplotlib>=3.11.1,<4",
+    "pandas>=3.0.5,<4",
+]
+
+[project.scripts]
+rnaseq-mapper = "rnaseq_mapper.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
