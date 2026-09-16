@@ -37,6 +37,9 @@ This will:
 3. Perform strand separation and quantification
 4. Generate per-sample coverage and RPM figures (SVG + PDF) under `output_dir/img/`
 
+![Generated svg (per-sample coverage) from example data](./example/img/SRR13160472.strand_coverage.svg)
+![Generated svg (rpm) from example data](./example/img/SRR13160472.strand_rpm.svg)
+
 ## Quick Start
 
 The `run` subcommand executes the full pipeline in one of two modes: **FASTQ mode** or **BAM/SAM mode**.
