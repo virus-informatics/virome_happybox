@@ -22,6 +22,10 @@ This installs `rnaseq-mapper` with the `index`, `map`, `visualize`, and `run` su
 
 The `example/` directory contains a small dataset for a quick test run. See `example/README.md` for details on the data.
 
+The example data originates from:
+
+> Phan T, Fay EJ, Lee Z, Aron S, Hu WS, Langlois RA. Segment-specific kinetics of mRNA, cRNA and vRNA accumulation during influenza infection. J Virol. 2021 Apr 26;95(10):e02102-20. doi: 10.1128/JVI.02102-20. Epub 2021 Mar 3. PMID: 33658346; PMCID: PMC8139675.
+
 ```bash
 rnaseq-mapper run \
     --genome example/GCF_000865725.1.sequence.fasta \
@@ -34,7 +38,7 @@ This will:
 
 1. Build a STAR genome index
 2. Run fastp QC and STAR mapping
-3. Perform strand separation and quantification
+3. Quantify viral RNA (separately by strand for strand-specific RNA-seq)
 4. Generate per-sample coverage and RPM figures (SVG + PDF) under `output_dir/img/`
 
 ![Generated svg (per-sample coverage) from example data](./example/img/SRR13160472.strand_coverage.svg)
@@ -42,9 +46,9 @@ This will:
 
 ## Quick Start
 
-The `run` subcommand executes the full pipeline in one of two modes: **FASTQ mode** or **BAM/SAM mode**.
+The `run` subcommand accepts either FASTQ or BAM/SAM files as input and executes the corresponding pipeline.
 
-Both modes require two CSV files:
+Both input formats require two CSV files:
 
 **SraRunInfo CSV** (`--sra-info`):
 
@@ -112,6 +116,45 @@ BAM files must be coordinate-sorted. SAM files are sorted internally. Files are 
 
 > [!NOTE]
 > RPM denominators are computed from `samtools stats` `raw total sequences` (primary alignments only, excluding secondary/supplementary). Because the presence of unmapped reads depends on how the BAM was produced, the denominator may differ from FASTQ mode (which uses fastp `after_filtering.total_reads`). A warning is printed at runtime.
+
+## Outputs
+
+```
+<outdir>/
+├── fastp/
+│   └── {Run}/                              # fastp QC reports (FASTQ mode only)
+├── star_index/
+│   └── {genome}/                           # STAR genome index (FASTQ mode only)
+├── star/
+│   └── {genome}/
+│       └── {Run}/                          # STAR mapping results (FASTQ mode only)
+├── summary/
+│   ├── all_samples.strand_counts.tsv       # Merged strand counts (all samples)
+│   └── all_samples.strand_depth.tsv        # Merged strand depth (all samples)
+└── img/
+    ├── {Run}.strand_coverage.svg           # Coverage depth plot (SVG)
+    ├── {Run}.strand_coverage.pdf           # Coverage depth plot (PDF)
+    ├── {Run}.strand_rpm.svg                # RPM bar chart (SVG)
+    └── {Run}.strand_rpm.pdf                # RPM bar chart (PDF)
+```
+
+## Troubleshooting
+
+### "command not found: rnaseq-mapper"
+
+Ensure the conda environment is activated:
+
+```bash
+conda activate rnaseq-mapper
+```
+
+### STAR BAM sorting memory error
+
+When the reference genome is small, STAR may fail with `not enough memory for BAM sorting`. The pipeline automatically retries with the RAM value suggested by STAR. If you need to override this value (e.g. on a memory-constrained node), use `--limit-bam-sort-ram`:
+
+```bash
+rnaseq-mapper run ... --limit-bam-sort-ram 2000000000
+```
 
 ## Running Individual Commands
 
@@ -189,42 +232,3 @@ rnaseq-mapper visualize \
 | `--depth-tsv`        |    Y     | -            | Merged strand depth TSV from `map`  |
 | `--counts-tsv`       |    Y     | -            | Merged strand counts TSV from `map` |
 | `-o`, `--output-dir` |    N     | `output_dir` | Working directory                   |
-
-## Outputs
-
-```
-<outdir>/
-├── fastp/
-│   └── {Run}/                              # fastp QC reports (FASTQ mode only)
-├── star_index/
-│   └── {genome}/                           # STAR genome index (FASTQ mode only)
-├── star/
-│   └── {genome}/
-│       └── {Run}/                          # STAR mapping results (FASTQ mode only)
-├── summary/
-│   ├── all_samples.strand_counts.tsv       # Merged strand counts (all samples)
-│   └── all_samples.strand_depth.tsv        # Merged strand depth (all samples)
-└── img/
-    ├── {Run}.strand_coverage.svg           # Coverage depth plot (SVG)
-    ├── {Run}.strand_coverage.pdf           # Coverage depth plot (PDF)
-    ├── {Run}.strand_rpm.svg                # RPM bar chart (SVG)
-    └── {Run}.strand_rpm.pdf                # RPM bar chart (PDF)
-```
-
-## Troubleshooting
-
-### "command not found: rnaseq-mapper"
-
-Ensure the conda environment is activated:
-
-```bash
-conda activate rnaseq-mapper
-```
-
-### STAR BAM sorting memory error
-
-When the reference genome is small, STAR may fail with `not enough memory for BAM sorting`. The pipeline automatically retries with the RAM value suggested by STAR. If you need to override this value (e.g. on a memory-constrained node), use `--limit-bam-sort-ram`:
-
-```bash
-rnaseq-mapper run ... --limit-bam-sort-ram 2000000000
-```
