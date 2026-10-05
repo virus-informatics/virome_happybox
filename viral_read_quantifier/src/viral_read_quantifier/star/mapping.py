@@ -11,6 +11,8 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
+from viral_read_quantifier.external import require_command
+
 logger = logging.getLogger(__name__)
 
 _STAR_OUTFILTER_MULTIMAP_NMAX = 1
@@ -124,6 +126,8 @@ def run_star_mapping(
     if star_tmp.is_dir():
         shutil.rmtree(star_tmp)
 
+    require_command("gunzip")
+
     read_files = [str(fastp_r1)]
     if fastp_r2 is not None:
         read_files.append(str(fastp_r2))
@@ -137,7 +141,8 @@ def run_star_mapping(
         "--readFilesIn",
         *read_files,
         "--readFilesCommand",
-        "zcat",
+        "gunzip",
+        "-c",
         "--outFileNamePrefix",
         prefix,
         "--outSAMtype",
