@@ -8,13 +8,22 @@ import logging
 import subprocess
 from pathlib import Path
 
-from rnaseq_mapper.external import require_command
-from rnaseq_mapper.fastp import FastpResult, read_fastp_after_filtering_total_reads, run_fastp
-from rnaseq_mapper.models import LibraryLayout, SampleEntry, Strandedness
-from rnaseq_mapper.samtools_stats import read_bam_read_stats
-from rnaseq_mapper.star.binary import check_star_version, resolve_star_binary
-from rnaseq_mapper.star.mapping import StarMapResult, index_bam, quickcheck_bam, run_star_mapping
-from rnaseq_mapper.strand_split import split_and_quantify
+from viral_read_quantifier.external import require_command
+from viral_read_quantifier.fastp import (
+    FastpResult,
+    read_fastp_after_filtering_total_reads,
+    run_fastp,
+)
+from viral_read_quantifier.models import LibraryLayout, SampleEntry, Strandedness
+from viral_read_quantifier.samtools_stats import read_bam_read_stats
+from viral_read_quantifier.star.binary import check_star_version, resolve_star_binary
+from viral_read_quantifier.star.mapping import (
+    StarMapResult,
+    index_bam,
+    quickcheck_bam,
+    run_star_mapping,
+)
+from viral_read_quantifier.strand_split import split_and_quantify
 
 logger = logging.getLogger(__name__)
 

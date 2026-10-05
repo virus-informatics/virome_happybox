@@ -8,7 +8,7 @@ import logging
 import sys
 from pathlib import Path
 
-from rnaseq_mapper.star.index import _STAR_GENOME_CHR_BIN_NBITS_DEFAULT
+from viral_read_quantifier.star.index import _STAR_GENOME_CHR_BIN_NBITS_DEFAULT
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +64,7 @@ def _add_common_options(parser: argparse.ArgumentParser) -> None:
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="rnaseq-mapper",
+        prog="viral_read_quantifier",
         description="Virome analysis — RNA-seq read mapping and strand-specific quantification",
     )
     sub = parser.add_subparsers(dest="command")
@@ -206,7 +206,7 @@ def _validate_input_mode(args: argparse.Namespace, parser: argparse.ArgumentPars
 
 
 def _dispatch_index(args: argparse.Namespace) -> None:
-    from rnaseq_mapper.cmd_index import run_index
+    from viral_read_quantifier.cmd_index import run_index
 
     run_index(
         genome_fasta=args.genome,
@@ -221,7 +221,7 @@ def _dispatch_index(args: argparse.Namespace) -> None:
 
 def _dispatch_map(args: argparse.Namespace) -> None:
     if args.alignment_dir is not None:
-        from rnaseq_mapper.cmd_map import run_map_from_alignments
+        from viral_read_quantifier.cmd_map import run_map_from_alignments
 
         run_map_from_alignments(
             sra_info_csv=args.sra_info,
@@ -232,7 +232,7 @@ def _dispatch_map(args: argparse.Namespace) -> None:
             force=args.force,
         )
     else:
-        from rnaseq_mapper.cmd_map import run_map
+        from viral_read_quantifier.cmd_map import run_map
 
         run_map(
             sra_info_csv=args.sra_info,
@@ -248,7 +248,7 @@ def _dispatch_map(args: argparse.Namespace) -> None:
 
 
 def _dispatch_visualize(args: argparse.Namespace) -> None:
-    from rnaseq_mapper.cmd_visualize import run_visualize
+    from viral_read_quantifier.cmd_visualize import run_visualize
 
     run_visualize(
         depth_tsv=args.depth_tsv,
@@ -258,11 +258,14 @@ def _dispatch_visualize(args: argparse.Namespace) -> None:
 
 
 def _dispatch_run(args: argparse.Namespace) -> None:
-    from rnaseq_mapper.cmd_map import MERGED_STRAND_COUNTS_BASENAME, MERGED_STRAND_DEPTH_BASENAME
-    from rnaseq_mapper.cmd_visualize import run_visualize
+    from viral_read_quantifier.cmd_map import (
+        MERGED_STRAND_COUNTS_BASENAME,
+        MERGED_STRAND_DEPTH_BASENAME,
+    )
+    from viral_read_quantifier.cmd_visualize import run_visualize
 
     if args.alignment_dir is None:
-        from rnaseq_mapper.cmd_index import run_index
+        from viral_read_quantifier.cmd_index import run_index
 
         logger.info("=== Step 1/3: index ===")
         args.index_dir = run_index(

@@ -1,4 +1,4 @@
-# rnaseq-mapper
+# viral_read_quantifier
 
 RNA-seq read mapping and strand-specific quantification pipeline for virome analysis.
 
@@ -11,12 +11,12 @@ RNA-seq read mapping and strand-specific quantification pipeline for virome anal
 
 ```bash
 git clone https://github.com/virus-informatics/virome_happybox.git
-cd virome_happybox/rnaseq-mapper
+cd virome_happybox/viral_read_quantifier
 conda env create -f environment.yml
-conda activate rnaseq-mapper
+conda activate viral_read_quantifier
 ```
 
-This installs `rnaseq-mapper` with the `index`, `map`, `visualize`, and `run` subcommands.
+This installs `viral_read_quantifier` with the `index`, `map`, `visualize`, and `run` subcommands.
 
 ## Tutorial: Run with example data
 
@@ -27,7 +27,7 @@ The example data originates from:
 > Phan T, Fay EJ, Lee Z, Aron S, Hu WS, Langlois RA. Segment-specific kinetics of mRNA, cRNA and vRNA accumulation during influenza infection. J Virol. 2021 Apr 26;95(10):e02102-20. doi: 10.1128/JVI.02102-20. Epub 2021 Mar 3. PMID: 33658346; PMCID: PMC8139675.
 
 ```bash
-rnaseq-mapper run \
+viral_read_quantifier run \
     --genome example/GCF_000865725.1.sequence.fasta \
     --sra-info example/sra_info.csv \
     --strandedness-info example/strandedness_info.csv \
@@ -40,6 +40,8 @@ This will:
 2. Run fastp QC and STAR mapping
 3. Quantify viral RNA (separately by strand for strand-specific RNA-seq)
 4. Generate per-sample coverage and RPM figures (SVG + PDF) under `output_dir/img/`
+
+<!-- WARNING: adjust path to Github -->
 
 ![Generated svg (per-sample coverage) from example data](./example/img/SRR13160472.strand_coverage.svg)
 ![Generated svg (rpm) from example data](./example/img/SRR13160472.strand_rpm.svg)
@@ -69,7 +71,7 @@ Both input formats require two CSV files:
 Runs the full pipeline: STAR index build → fastp QC → STAR mapping → strand separation → quantification → visualization.
 
 ```bash
-rnaseq-mapper run \
+viral_read_quantifier run \
     --genome <reference.fasta> \
     --sra-info <sra_info.csv> \
     --strandedness-info <strandedness_info.csv> \
@@ -97,7 +99,7 @@ FASTQ files are resolved from `--fastq-dir` using the `Run` column: `{Run}_1.fas
 Skips index build, fastp, and STAR mapping. Runs strand separation → quantification → visualization from pre-aligned files.
 
 ```bash
-rnaseq-mapper run \
+viral_read_quantifier run \
     --sra-info <sra_info.csv> \
     --strandedness-info <strandedness_info.csv> \
     --alignment-dir <bam_dir>
@@ -140,12 +142,12 @@ BAM files must be coordinate-sorted. SAM files are sorted internally. Files are 
 
 ## Troubleshooting
 
-### "command not found: rnaseq-mapper"
+### "command not found: viral_read_quantifier"
 
 Ensure the conda environment is activated:
 
 ```bash
-conda activate rnaseq-mapper
+conda activate viral_read_quantifier
 ```
 
 ### STAR BAM sorting memory error
@@ -153,7 +155,7 @@ conda activate rnaseq-mapper
 When the reference genome is small, STAR may fail with `not enough memory for BAM sorting`. The pipeline automatically retries with the RAM value suggested by STAR. If you need to override this value (e.g. on a memory-constrained node), use `--limit-bam-sort-ram`:
 
 ```bash
-rnaseq-mapper run ... --limit-bam-sort-ram 2000000000
+viral_read_quantifier run ... --limit-bam-sort-ram 2000000000
 ```
 
 ## Running Individual Commands
@@ -165,7 +167,7 @@ If you prefer to run each step separately instead of using `run`, use `index`, `
 Build a STAR genome index from a reference FASTA:
 
 ```bash
-rnaseq-mapper index --genome <reference.fasta>
+viral_read_quantifier index --genome <reference.fasta>
 ```
 
 | Option                     | Required | Default      | Description                                                                      |
@@ -185,7 +187,7 @@ Run fastp QC, STAR mapping, strand separation, and quantification. Requires a pr
 FASTQ mode:
 
 ```bash
-rnaseq-mapper map \
+viral_read_quantifier map \
     --sra-info <sra_info.csv> \
     --strandedness-info <strandedness_info.csv> \
     --index-dir <star_index_dir> \
@@ -195,7 +197,7 @@ rnaseq-mapper map \
 BAM/SAM mode:
 
 ```bash
-rnaseq-mapper map \
+viral_read_quantifier map \
     --sra-info <sra_info.csv> \
     --strandedness-info <strandedness_info.csv> \
     --alignment-dir <bam_dir>
@@ -222,7 +224,7 @@ rnaseq-mapper map \
 Generate per-sample coverage and RPM figures from the TSV outputs of `map`:
 
 ```bash
-rnaseq-mapper visualize \
+viral_read_quantifier visualize \
     --depth-tsv <outdir>/summary/all_samples.strand_depth.tsv \
     --counts-tsv <outdir>/summary/all_samples.strand_counts.tsv
 ```

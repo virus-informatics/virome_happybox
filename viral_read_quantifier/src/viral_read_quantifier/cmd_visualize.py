@@ -9,8 +9,8 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from rnaseq_mapper.visualize.coverage import plot_strand_coverage
-from rnaseq_mapper.visualize.rpm import plot_strand_rpm
+from viral_read_quantifier.visualize.coverage import plot_strand_coverage
+from viral_read_quantifier.visualize.rpm import plot_strand_rpm
 
 logger = logging.getLogger(__name__)
 

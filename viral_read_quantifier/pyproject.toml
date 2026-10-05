@@ -1,5 +1,5 @@
 [project]
-name = "rnaseq-mapper"
+name = "viral_read_quantifier"
 version = "1.0.0"
 description = "Virome analysis — RNA-seq read mapping"
 readme = "README.md"
@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
-rnaseq-mapper = "rnaseq_mapper.cli:main"
+viral_read_quantifier = "viral_read_quantifier.cli:main"
 
 [build-system]
 requires = ["hatchling>=1.27"]

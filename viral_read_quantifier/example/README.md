@@ -1,4 +1,4 @@
-# Example Data for rnaseq-mapper
+# Example Data for viral_read_quantifier
 
 ## Example dataset
 
@@ -12,6 +12,10 @@
 ### downsampled SRR13160472
 
 Ref: https://www.ncbi.nlm.nih.gov/sra/?term=SRR13160472
+
+Citation:
+
+> Phan T, Fay EJ, Lee Z, Aron S, Hu WS, Langlois RA. Segment-specific kinetics of mRNA, cRNA and vRNA accumulation during influenza infection. J Virol. 2021 Apr 26;95(10):e02102-20. doi: 10.1128/JVI.02102-20. Epub 2021 Mar 3. PMID: 33658346; PMCID: PMC8139675.
 
 | Item          | Value                        |
 | ------------- | ---------------------------- |

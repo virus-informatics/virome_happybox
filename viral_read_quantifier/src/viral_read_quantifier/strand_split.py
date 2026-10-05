@@ -8,7 +8,7 @@ import subprocess
 from io import TextIOWrapper
 from pathlib import Path
 
-from rnaseq_mapper.models import LibraryLayout, Strandedness
+from viral_read_quantifier.models import LibraryLayout, Strandedness
 
 logger = logging.getLogger(__name__)
 

@@ -1,4 +1,4 @@
-name: rnaseq-mapper
+name: viral_read_quantifier
 channels:
   - conda-forge
   - bioconda

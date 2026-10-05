@@ -6,4 +6,4 @@
 | :---------------------------------------------------- | :-------------------------------- | :--------- |
 | [genome-annotator](./genome-annotator/)               | Visualize annotated result.       | TBD        |
 | [phylogenetic-visualizer](./phylogenetic-visualizer/) | Visualize phylogenetic tree.      | TBD        |
-| [rnaseq-mapper](./rnaseq-mapper/)                     | Visualize RNA-seq mapping result. | Apache-2.0 |
+| [viral_read_quantifier](./viral_read_quantifier/)     | Visualize RNA-seq mapping result. | Apache-2.0 |

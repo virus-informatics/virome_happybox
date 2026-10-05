@@ -6,8 +6,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from rnaseq_mapper.star.binary import check_star_version, resolve_star_binary
-from rnaseq_mapper.star.index import (
+from viral_read_quantifier.star.binary import check_star_version, resolve_star_binary
+from viral_read_quantifier.star.index import (
     build_star_index,
     compute_genome_sa_index_nbases,
     read_fasta_total_length_bases,

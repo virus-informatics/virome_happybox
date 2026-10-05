@@ -9,7 +9,7 @@ import pandas as pd
 from matplotlib.patches import Patch
 from matplotlib.ticker import FuncFormatter
 
-from rnaseq_mapper.visualize._style import (
+from viral_read_quantifier.visualize._style import (
     STRAND_COLORS,
     STRAND_FALLBACK_COLOR,
     resolve_strand_order,
