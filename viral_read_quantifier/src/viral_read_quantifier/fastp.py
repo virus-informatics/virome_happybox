@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import logging
+import platform
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,11 +48,14 @@ def run_fastp(
     json_report = sample_dir / f"{run_id}.fastp.json"
     html_report = sample_dir / f"{run_id}.fastp.html"
 
+    # macOS: STAR readFilesCommand does not work with gzip due to missing shebang fallback
+    ext = ".fastq" if platform.system() == "Darwin" else ".fastq.gz"
+
     if raw_r2 is not None:
-        trimmed_r1 = sample_dir / f"{run_id}_R1.fastp.fastq.gz"
-        trimmed_r2 = sample_dir / f"{run_id}_R2.fastp.fastq.gz"
+        trimmed_r1 = sample_dir / f"{run_id}_R1.fastp{ext}"
+        trimmed_r2 = sample_dir / f"{run_id}_R2.fastp{ext}"
     else:
-        trimmed_r1 = sample_dir / f"{run_id}.fastp.fastq.gz"
+        trimmed_r1 = sample_dir / f"{run_id}.fastp{ext}"
         trimmed_r2 = None
 
     result = FastpResult(trimmed_r1=trimmed_r1, trimmed_r2=trimmed_r2, json_report=json_report)

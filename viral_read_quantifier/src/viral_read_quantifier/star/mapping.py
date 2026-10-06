@@ -126,11 +126,13 @@ def run_star_mapping(
     if star_tmp.is_dir():
         shutil.rmtree(star_tmp)
 
-    require_command("gunzip")
-
     read_files = [str(fastp_r1)]
     if fastp_r2 is not None:
         read_files.append(str(fastp_r2))
+
+    gzipped_input = fastp_r1.suffix == ".gz"
+    if gzipped_input:
+        require_command("gunzip")
 
     cmd = [
         str(star_bin),
@@ -140,9 +142,6 @@ def run_star_mapping(
         str(index_dir),
         "--readFilesIn",
         *read_files,
-        "--readFilesCommand",
-        "gunzip",
-        "-c",
         "--outFileNamePrefix",
         prefix,
         "--outSAMtype",
@@ -168,6 +167,9 @@ def run_star_mapping(
         "--outTmpDir",
         str(star_tmp),
     ]
+
+    if gzipped_input:
+        cmd.extend(["--readFilesCommand", "gunzip", "-c"])
 
     if limit_bam_sort_ram_bytes is not None:
         cmd.extend(["--limitBAMsortRAM", str(limit_bam_sort_ram_bytes)])
