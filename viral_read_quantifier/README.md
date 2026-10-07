@@ -7,6 +7,9 @@ RNA-seq read mapping and strand-specific quantification pipeline for virome anal
 - conda ([Miniforge](https://github.com/conda-forge/miniforge) recommended)
 - Git
 
+> [!WARNING]
+> macOS ARM64 (Apple Silicon) is not supported. STAR 2.7.11b does not work correctly on this platform. See [alexdobin/STAR#2691](https://github.com/alexdobin/STAR/pull/2691) for details.
+
 ## Installation
 
 ```bash
