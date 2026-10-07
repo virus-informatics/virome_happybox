@@ -1,0 +1,57 @@
+[project]
+name = "viral_genome_annotator"
+version = "1.0.0"
+description = "Virome analysis — genome annotation visualization"
+readme = "README.md"
+authors = [
+]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "biopython>=1.88,<2",
+    "pandas>=3.0.5,<4",
+    "plotly>=6.9.0,<7",
+]
+
+[project.scripts]
+viral_genome_annotator = "viral_genome_annotator.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+no-binary-package = ["viral_genome_annotator"]
+exclude-newer = "14 days"
+cache-dir = ".cache/uv"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1,<10",
+    "pytest-cov>=7.1.0,<8",
+    "ruff>=0.16.5,<1",
+    "ty>=0.0.75,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=viral_genome_annotator --cov-report=term-missing"
+tmp_path_retention_policy = "none"
+
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "COM812",  # missing trailing comma
+    "E",       # pycodestyle errors
+    "W",       # pycodestyle warnings
+    "F",       # pyflakes
+    "I",       # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+"src/viral_genome_annotator/visualize/plot.py" = ["E501"]
