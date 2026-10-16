@@ -5,24 +5,19 @@
 | Path                                     | Description                 |
 | ---------------------------------------- | --------------------------- |
 | `GCF_000865725.1.sequence.fasta`         | Reference genome            |
-| `SRR13160472/SRR13160472_{1,2}.fastq.gz` | Paired-end reads            |
+| `fastq/SRR13160470_{1,2}.fastq.gz`       | Paired-end reads for SRR13160470 |
+| `fastq/SRR13160472_{1,2}.fastq.gz`       | Paired-end reads for SRR13160472 |
 | `sra_info.csv`                           | `--sra-info` input          |
 | `strandedness_info.csv`                  | `--strandedness-info` input |
 
-### downsampled SRR13160472
+### Downsampled sample data
 
-Ref: https://www.ncbi.nlm.nih.gov/sra/?term=SRR13160472
+The example FASTQ files are random 1% subsets of these paired-end runs:
 
-Citation:
-
-> Phan T, Fay EJ, Lee Z, Aron S, Hu WS, Langlois RA. Segment-specific kinetics of mRNA, cRNA and vRNA accumulation during influenza infection. J Virol. 2021 Apr 26;95(10):e02102-20. doi: 10.1128/JVI.02102-20. Epub 2021 Mar 3. PMID: 33658346; PMCID: PMC8139675.
-
-| Item          | Value                        |
-| ------------- | ---------------------------- |
-| LibraryLayout | `PAIRED`                     |
-| strandedness  | `fr-secondstrand`            |
-| Subset        | 1% of the full-size run      |
-| Reads         | 152,673 per file, 51 bp each |
+| Run                                                               | LibraryLayout | strandedness      | Reads per FASTQ file | Read length |
+| ----------------------------------------------------------------- | ------------- | ----------------- | -------------------: | ----------: |
+| [SRR13160470](https://www.ncbi.nlm.nih.gov/sra/?term=SRR13160470) | `PAIRED`      | `fr-secondstrand` |              146,915 |       51 bp |
+| [SRR13160472](https://www.ncbi.nlm.nih.gov/sra/?term=SRR13160472) | `PAIRED`      | `fr-secondstrand` |              152,673 |       51 bp |
 
 ### GCF_000865725.1 genome fasta
 
@@ -32,15 +27,17 @@ Ref: https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000865725.1/
 
 ## How to prepare these data
 
-The FASTQ files are a random 1% subset of the full-size run, downsampled with [seqkit](https://bioinf.shenwei.me/seqkit/) v2.13.0:
+The FASTQ files are random 1% subsets of the full-size runs, downsampled with [seqkit](https://bioinf.shenwei.me/seqkit/) v2.13.0:
 
 ```bash
-seqkit sample2 --proportion 0.01 --two-pass --rand-seed 11 \
-    --out-file SRR13160472_1.fastq.gz <full-size>/SRR13160472_1.fastq.gz
-seqkit sample2 --proportion 0.01 --two-pass --rand-seed 11 \
-    --out-file SRR13160472_2.fastq.gz <full-size>/SRR13160472_2.fastq.gz
+for run in SRR13160470 SRR13160472; do
+    seqkit sample2 --proportion 0.01 --two-pass --rand-seed 11 \
+        --out-file "fastq/${run}_1.fastq.gz" "<full-size>/${run}_1.fastq.gz"
+    seqkit sample2 --proportion 0.01 --two-pass --rand-seed 11 \
+        --out-file "fastq/${run}_2.fastq.gz" "<full-size>/${run}_2.fastq.gz"
+done
 ```
 
 - `--rand-seed 11` is shared by `_1` and `_2`, so the read pairs stay matched.
 - `--two-pass` keeps the extracted read count stable for a given proportion.
-- A random subset is used instead of the first N reads: this run is registered with the `alignment_sorted` schema, so its spot order may follow genomic coordinates and a head-truncated subset would be positionally biased.
+- Random subsets are used instead of the first N reads: these runs are registered with the `alignment_sorted` schema, so their spot order may follow genomic coordinates and a head-truncated subset would be positionally biased.

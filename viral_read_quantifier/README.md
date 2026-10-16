@@ -34,7 +34,7 @@ viral_read_quantifier run \
     --genome example/GCF_000865725.1.sequence.fasta \
     --sra-info example/sra_info.csv \
     --strandedness-info example/strandedness_info.csv \
-    --fastq-dir example/SRR13160472
+    --fastq-dir example/fastq
 ```
 
 This will:
