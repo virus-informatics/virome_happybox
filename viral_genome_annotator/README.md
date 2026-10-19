@@ -242,7 +242,7 @@ viral_genome_annotator update_refseq gen_db
 │   ├── viral.1.genomic.gbff.gz
 │   ├── assembly_summary.txt
 │   └── assembly_zips/
-│       └── batch_manifest.jsonl
+│       └── batch_manifest.jsonl  # Batches fetched and extracted successfully (one line per batch)
 ├── assembly/
 │   └── assembly_map.json
 ├── taxdump/

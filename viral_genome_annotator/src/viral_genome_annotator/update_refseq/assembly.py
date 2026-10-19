@@ -1,20 +1,18 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright 2026 Jumpei Ito & Junna Kawasaki
 
-"""Assembly summary parser and NCBI Datasets API client for GCF → NC mapping."""
+"""Assembly summary parser and assembly map builder for GCF → NC mapping."""
 
 from __future__ import annotations
 
 import json
 import logging
 import time
-import urllib.error
-import urllib.request
-import zipfile
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
+from viral_genome_annotator.accession import strip_accession_version
+from viral_genome_annotator.update_refseq.datasets_api import fetch_and_verify_batch_zip
 from viral_genome_annotator.update_refseq.download import (
     DOWNLOAD_META_FILENAME,
     _download_with_retry,
@@ -28,7 +26,6 @@ logger = logging.getLogger(__name__)
 _NCBI_VIRAL_ASSEMBLY_SUMMARY_URL = (
     "https://ftp.ncbi.nlm.nih.gov/genomes/refseq/viral/assembly_summary.txt"
 )
-_NCBI_DATASETS_GENOME_DOWNLOAD_URL = "https://api.ncbi.nlm.nih.gov/datasets/v2/genome/download"
 
 ASSEMBLY_SUMMARY_FILENAME = "assembly_summary.txt"
 ASSEMBLY_MAP_FILENAME = "assembly_map.json"
@@ -38,15 +35,6 @@ _BATCH_MANIFEST_FILENAME = "batch_manifest.jsonl"
 _DEFAULT_ASSEMBLY_BATCH_SIZE = 500
 # Rate limit is 5 rps (200ms); 3s is intentionally conservative
 _ASSEMBLY_BATCH_SLEEP_SEC = 3
-_ASSEMBLY_API_MAX_ATTEMPTS = 3
-_ASSEMBLY_API_BACKOFF_BASE_SEC = 5
-
-_SEQUENCE_REPORT_FIELD_MAP: dict[str, str] = {
-    "refseqAccession": "refseq_accession",
-    "chrName": "chr_name",
-    "length": "length",
-    "genbankAccession": "genbank_accession",
-}
 
 # Column layout of assembly_summary.txt, described in its header comment and in
 # ftp://ftp.ncbi.nlm.nih.gov/genomes/README_assembly_summary.txt
@@ -64,12 +52,6 @@ class AssemblySummaryRow:
 
     accession: str
     taxid: int | None
-
-
-def strip_gcf_version(accession: str) -> str:
-    """GCF_000839185.1 -> GCF_000839185"""
-    dot_idx = accession.rfind(".")
-    return accession[:dot_idx] if dot_idx != -1 else accession
 
 
 def _parse_summary_taxid(columns: list[str], accession: str) -> int | None:
@@ -111,7 +93,9 @@ def parse_assembly_summary(path: Path) -> list[AssemblySummaryRow]:
 
 def build_assembly_taxid_map(rows: list[AssemblySummaryRow]) -> dict[str, int]:
     """Build {GCF_stripped: assembly-level taxid} from parsed summary rows."""
-    return {strip_gcf_version(row.accession): row.taxid for row in rows if row.taxid is not None}
+    return {
+        strip_accession_version(row.accession): row.taxid for row in rows if row.taxid is not None
+    }
 
 
 def determine_fetch_targets(
@@ -121,105 +105,11 @@ def determine_fetch_targets(
     """Return accessions needing fetch: new or version-updated."""
     targets: list[str] = []
     for acc in all_accessions:
-        key = strip_gcf_version(acc)
+        key = strip_accession_version(acc)
         existing = existing_mappings.get(key)
         if existing is None or existing.get("accession") != acc:
             targets.append(acc)
     return targets
-
-
-def _fetch_batch_zip(accessions: list[str], dest: Path) -> None:
-    body = json.dumps(
-        {
-            "accessions": accessions,
-            "include_annotation_type": ["SEQUENCE_REPORT"],
-        },
-    ).encode()
-
-    req = urllib.request.Request(
-        _NCBI_DATASETS_GENOME_DOWNLOAD_URL,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Accept": "application/zip",
-        },
-        method="POST",
-    )
-
-    tmp = dest.with_suffix(".zip.tmp")
-    try:
-        with urllib.request.urlopen(req) as resp:  # noqa: S310
-            with tmp.open("wb") as f:
-                while True:
-                    chunk = resp.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    f.write(chunk)
-        tmp.rename(dest)
-    except BaseException:
-        tmp.unlink(missing_ok=True)
-        raise
-
-
-def _fetch_batch_zip_with_retry(accessions: list[str], dest: Path) -> None:
-    for attempt in range(_ASSEMBLY_API_MAX_ATTEMPTS):
-        try:
-            _fetch_batch_zip(accessions, dest)
-            return
-        except (urllib.error.URLError, OSError) as e:
-            if attempt == _ASSEMBLY_API_MAX_ATTEMPTS - 1:
-                raise
-            wait = _ASSEMBLY_API_BACKOFF_BASE_SEC * (attempt + 1)
-            logger.warning(
-                "API batch request: attempt %d/%d failed (%s), retrying in %ds",
-                attempt + 1,
-                _ASSEMBLY_API_MAX_ATTEMPTS,
-                e,
-                wait,
-            )
-            time.sleep(wait)
-
-
-def extract_mappings_from_zip(
-    zip_path: Path,
-    fetched_at: str,
-    assembly_taxid_map: dict[str, int],
-) -> dict[str, dict]:
-    """Read sequence_report.jsonl from ZIP, return {stripped_gcf: mapping}."""
-    mappings: dict[str, dict] = {}
-    with zipfile.ZipFile(zip_path) as zf:
-        for name in zf.namelist():
-            if not name.endswith("/sequence_report.jsonl"):
-                continue
-            parts = name.split("/")
-            if len(parts) < 4:
-                continue
-            gcf_versioned = parts[-2]
-
-            data = zf.read(name).decode()
-            sequences: list[dict] = []
-            for line in data.strip().split("\n"):
-                if not line:
-                    continue
-                rec = json.loads(line)
-                seq = {
-                    snake: rec[camel]
-                    for camel, snake in _SEQUENCE_REPORT_FIELD_MAP.items()
-                    if camel in rec
-                }
-                sequences.append(seq)
-
-            key = strip_gcf_version(gcf_versioned)
-            taxid = assembly_taxid_map.get(key)
-            if taxid is None:
-                logger.warning("%s: no assembly-level taxid in %s", key, ASSEMBLY_SUMMARY_FILENAME)
-            mappings[key] = {
-                "accession": gcf_versioned,
-                "fetched_at": fetched_at,
-                "taxid": taxid,
-                "sequences": sequences,
-            }
-    return mappings
 
 
 def _load_assembly_map(path: Path) -> dict:
@@ -308,12 +198,6 @@ def download_assembly_map(
         if batch_idx > 0:
             time.sleep(_ASSEMBLY_BATCH_SLEEP_SEC)
 
-        now = datetime.now(timezone.utc)
-        timestamp_compact = now.strftime("%Y%m%dT%H%M%SZ")
-        fetched_at = now.isoformat()
-        zip_name = f"batch_{timestamp_compact}.zip"
-        zip_path = zips_dir / zip_name
-
         logger.info(
             "Batch %d/%d: fetching %d accessions...",
             batch_idx + 1,
@@ -321,19 +205,24 @@ def download_assembly_map(
             len(batch),
         )
 
-        _fetch_batch_zip_with_retry(batch, zip_path)
+        fetched = fetch_and_verify_batch_zip(
+            batch,
+            zips_dir,
+            assembly_taxid_map,
+            ASSEMBLY_SUMMARY_FILENAME,
+        )
 
+        # The manifest records only batches whose zip was extracted successfully
         manifest_entry = {
             "batch": batch_idx,
-            "zip": zip_name,
-            "fetched_at": fetched_at,
+            "zip": fetched.zip_path.name,
+            "fetched_at": fetched.fetched_at,
             "accessions": batch,
         }
         with manifest_path.open("a") as f:
             f.write(json.dumps(manifest_entry, ensure_ascii=False) + "\n")
 
-        batch_mappings = extract_mappings_from_zip(zip_path, fetched_at, assembly_taxid_map)
-        assembly_map.setdefault("mappings", {}).update(batch_mappings)
+        assembly_map.setdefault("mappings", {}).update(fetched.mappings)
         assembly_map["source"] = ASSEMBLY_SUMMARY_FILENAME
         assembly_map["source_record_count"] = len(summary_rows)
         _save_assembly_map(map_path, assembly_map)
@@ -342,7 +231,7 @@ def download_assembly_map(
             "Batch %d/%d: extracted %d mappings",
             batch_idx + 1,
             total_batches,
-            len(batch_mappings),
+            len(fetched.mappings),
         )
 
     logger.info(

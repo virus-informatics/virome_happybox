@@ -9,6 +9,7 @@ import csv
 import logging
 from pathlib import Path
 
+from viral_genome_annotator.accession import strip_accession_version
 from viral_genome_annotator.visualize.annotation import extract_cds_annotations
 from viral_genome_annotator.visualize.blast_result import (
     BlastHit,
@@ -122,11 +123,6 @@ _BEST_HIT_TSV_COLUMNS = [
 ]
 
 
-def _strip_version(accession: str) -> str:
-    dot = accession.rfind(".")
-    return accession[:dot] if dot != -1 else accession
-
-
 def _make_track_label(sseqid: str, segment: str | None) -> str:
     if segment:
         return f"{sseqid} | segment {segment}"
@@ -170,7 +166,7 @@ def _write_best_hit_tsv(
                     sra_id,
                     hit.qseqid,
                     hit.sseqid,
-                    _strip_version(hit.sseqid),
+                    strip_accession_version(hit.sseqid),
                     hit.pident,
                     hit.length,
                     hit.mismatch,

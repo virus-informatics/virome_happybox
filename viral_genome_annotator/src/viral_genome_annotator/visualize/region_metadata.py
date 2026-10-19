@@ -12,6 +12,7 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
+from viral_genome_annotator.accession import strip_accession_version
 from viral_genome_annotator.visualize.annotation import (
     GFF3_COLUMN_COUNT,
     parse_gff3_attributes,
@@ -65,11 +66,6 @@ class GroupTaxonomy:
     family: str
     genus: str
     assembly_taxid: int | None
-
-
-def _strip_accession_version(accession: str) -> str:
-    dot_idx = accession.rfind(".")
-    return accession[:dot_idx] if dot_idx != -1 else accession
 
 
 def _load_assembly_mappings(assembly_map_path: Path) -> dict:
@@ -223,7 +219,7 @@ def _build_version_stripped_index(
     """Build {accession_base: (versioned_accession, assembly)} for fallback."""
     index: dict[str, tuple[str, str]] = {}
     for nc_versioned, assembly in nc_to_assembly.items():
-        base = _strip_accession_version(nc_versioned)
+        base = strip_accession_version(nc_versioned)
         index[base] = (nc_versioned, assembly)
     return index
 
@@ -242,7 +238,7 @@ def resolve_assembly_for_accession(
     if exact is not None:
         return exact
 
-    base = _strip_accession_version(sseqid)
+    base = strip_accession_version(sseqid)
     fallback = version_stripped_index.get(base)
     if fallback is not None:
         matched_versioned, assembly = fallback
