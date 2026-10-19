@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: Copyright 2026 Jumpei Ito & Junna Kawasaki
+# SPDX-FileCopyrightText: Copyright 2026 Junna Kawasaki & Jumpei Ito
 
 """Extract CDS annotations from a concatenated GFF3 file."""
 

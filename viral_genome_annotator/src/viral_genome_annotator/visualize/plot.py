@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: Copyright 2026 Jumpei Ito & Junna Kawasaki
+# SPDX-FileCopyrightText: Copyright 2026 Junna Kawasaki & Jumpei Ito
 
 """Generate interactive Plotly HTML figures for genome annotation visualization."""
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: Copyright 2026 Jumpei Ito & Junna Kawasaki
+# SPDX-FileCopyrightText: Copyright 2026 Junna Kawasaki & Jumpei Ito
 
 """Select the genus-best Assembly per figure and assemble PlotGroups."""
 

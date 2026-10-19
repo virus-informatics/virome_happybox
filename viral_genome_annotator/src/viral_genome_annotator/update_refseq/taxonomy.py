@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-# SPDX-FileCopyrightText: Copyright 2026 Jumpei Ito & Junna Kawasaki
+# SPDX-FileCopyrightText: Copyright 2026 Junna Kawasaki & Jumpei Ito
 
 """Resolve NCBI taxids to Family/Genus/Species via taxonkit."""
 
