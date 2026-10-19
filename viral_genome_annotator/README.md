@@ -1,6 +1,6 @@
 # viral_genome_annotator
 
-Genome annotation visualizer for virome analysis — aligns detected viral genomes against known references and renders interactive HTML figures.
+Genome annotation visualizer for virome analysis — aligns detected viral sequences against known reference genomes and renders interactive HTML figures.
 
 ## Requirements
 
@@ -20,15 +20,15 @@ This installs `viral_genome_annotator` with the `run`, `blast`, `visualize`, and
 
 ## Reference Data
 
-Download the pre-built reference data from [GitHub Releases](https://github.com/TODO/viral_genome_annotator/releases). Each release is tagged as `refseq_viral_YYYYMMDD` (e.g. `refseq_viral_20260714`).
+Download the pre-built reference data from [GitHub Releases](https://github.com/virus-informatics/virome_happybox/releases?q=refseq_viral&expanded=true). Each release is tagged as `refseq_viral_YYYYMMDD` (e.g. `refseq_viral_20261007`).
 
 ```bash
 # Download the asset
-curl -LO https://github.com/virus-informatics/virome_happybox/releases/download/refseq_viral_20260714/refseq_viral_20260714.tar.gz
+curl -LO https://github.com/virus-informatics/virome_happybox/releases/download/refseq_viral_20261007/refseq_viral_20261007.tar.gz
 
 # Extract into the default --refseq-dir location
 mkdir -p output_dir
-tar xzf refseq_viral_20260714.tar.gz -C output_dir
+tar xzf refseq_viral_20261007.tar.gz -C output_dir
 ```
 
 Once extracted, the `run`, `blast`, and `visualize` subcommands will find the reference data automatically (default: `output_dir/update_refseq`).
@@ -42,9 +42,6 @@ The `example/` directory contains two small query FASTA files (Parvoviridae cont
 
 ```bash
 # Run the full pipeline on one of the example files
-viral_genome_annotator run -i example/SRR10294002_Parvoviridae.fasta
-
-# Then run the other example as well
 viral_genome_annotator run -i example/SRR11472191_Parvoviridae.fasta
 ```
 
