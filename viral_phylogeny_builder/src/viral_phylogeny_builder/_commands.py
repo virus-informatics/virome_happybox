@@ -1,0 +1,43 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-FileCopyrightText: Copyright 2026 Junna Kawasaki & Jumpei Ito
+
+"""CLI command and subcommand names.
+
+The output layout is {output_dir}/{command}/{subcommand}/{virus_family}, so the pipeline
+modules build paths from the same names the CLI parser registers. Defining them separately
+would let a renamed subcommand keep writing to the directory of its old name.
+"""
+
+UPDATE_REFERENCE_COMMAND = "update-reference"
+UPDATE_REFERENCE_FETCH_METADATA_SUBCOMMAND = "fetch-metadata"
+UPDATE_REFERENCE_FETCH_GENOME_SUBCOMMAND = "fetch-genome"
+UPDATE_REFERENCE_RUN_SUBCOMMAND = "run"
+UPDATE_REFERENCE_SUBCOMMANDS = (
+    UPDATE_REFERENCE_FETCH_METADATA_SUBCOMMAND,
+    UPDATE_REFERENCE_FETCH_GENOME_SUBCOMMAND,
+    UPDATE_REFERENCE_RUN_SUBCOMMAND,
+)
+
+BUILD_REFTREE_COMMAND = "build-reftree"
+BUILD_REFTREE_SEARCH_SUBCOMMAND = "search"
+BUILD_REFTREE_ALIGN_SUBCOMMAND = "align"
+BUILD_REFTREE_VISUALIZE_SUBCOMMAND = "visualize"
+BUILD_REFTREE_RUN_SUBCOMMAND = "run"
+BUILD_REFTREE_SUBCOMMANDS = (
+    BUILD_REFTREE_SEARCH_SUBCOMMAND,
+    BUILD_REFTREE_ALIGN_SUBCOMMAND,
+    BUILD_REFTREE_VISUALIZE_SUBCOMMAND,
+    BUILD_REFTREE_RUN_SUBCOMMAND,
+)
+
+QUERY_COMMAND = "query"
+QUERY_SEARCH_SUBCOMMAND = "search"
+QUERY_ALIGN_SUBCOMMAND = "align"
+QUERY_VISUALIZE_SUBCOMMAND = "visualize"
+QUERY_RUN_SUBCOMMAND = "run"
+QUERY_SUBCOMMANDS = (
+    QUERY_SEARCH_SUBCOMMAND,
+    QUERY_ALIGN_SUBCOMMAND,
+    QUERY_VISUALIZE_SUBCOMMAND,
+    QUERY_RUN_SUBCOMMAND,
+)

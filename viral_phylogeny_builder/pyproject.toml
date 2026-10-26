@@ -1,0 +1,19 @@
+[project]
+name = "viral_phylogeny_builder"
+version = "0.1.0"
+description = "Virome analysis — phylogenetic tree visualization"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+authors = [
+]
+dependencies = [
+    "pandas>=3.0.5,<4",
+]
+
+[project.scripts]
+viral_phylogeny_builder = "viral_phylogeny_builder.cli:main"
+
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+

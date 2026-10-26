@@ -1,0 +1,23 @@
+host_class	host_taxonomy	include_keyword	exclude_keyword
+Human	Human	Homo	
+Mammalia	Primates	Primates	Homo
+Mammalia	Rodents	Glires	
+Mammalia	other_mammalia	Euarchontoglires	
+Mammalia	Artiodactyla	Artiodactyla	
+Mammalia	Carnivora	Carnivora	
+Mammalia	Chiroptera	Chiroptera	
+Mammalia	Eulipotyphla	Eulipotyphla	
+Mammalia	Perissodactyla	Perissodactyla	
+Mammalia	Pholidota	Pholidota	
+Mammalia	other_mammalia	Monotremata	
+Mammalia	other_mammalia	Afrotheria	
+Mammalia	other_mammalia	Xenarthra	
+Mammalia	other_mammalia	Metatheria	
+Aves	Aves	Aves	
+Acari	Acari	Acari	
+Flies	Diptera	Diptera	
+Arthropoda	Arthropoda	Arthropoda	
+Reptile	Reptile	Crocodylia	
+Reptile	Reptile	Lepidosauria	
+Reptile	Reptile	Testudines	
+Amphibia	Amphibia	Amphibia	
