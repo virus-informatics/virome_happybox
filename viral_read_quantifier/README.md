@@ -64,6 +64,9 @@ Both input formats require two CSV files:
 
 **Strandedness CSV** (`--strandedness-info`):
 
+To estimate strandedness from host-derived RNA-seq reads with Salmon, see the
+[strandness estimation workflow](strandness_estimation/README.md).
+
 | Column       | Description                                             |
 | :----------- | :------------------------------------------------------ |
 | Run          | Sample ID (must match SraRunInfo)                       |
