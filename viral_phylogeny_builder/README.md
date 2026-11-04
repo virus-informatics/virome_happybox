@@ -360,6 +360,8 @@ git tag rdrp_db_${DATE}
 git push origin rdrp_db_${DATE}
 gh release create rdrp_db_${DATE} \
   --title "Curated RdRp Reference Data (${DATE})" \
+  --notes "RdRp Reference Data (${DATE})" \
+  --latest=false \
   rdrp_db_${DATE}.tar.gz
 ```
 
@@ -414,5 +416,6 @@ git push origin reftree_${DATE}
 gh release create reftree_${DATE} \
   --title "Reference Tree Data (${DATE})" \
   --notes "Built with Curated RdRp DB: ${RDRP_DB_TAG}" \
+  --latest=false \
   reftree_assets/*.tar.gz
 ```
