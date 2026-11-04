@@ -1,6 +1,6 @@
 [project]
 name = "viral_phylogeny_builder"
-version = "0.1.0"
+version = "1.0.0"
 description = "Virome analysis — phylogenetic tree visualization"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
