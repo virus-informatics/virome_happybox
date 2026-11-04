@@ -47,10 +47,11 @@ FAMILY=Bornaviridae
 Reference alignments and trees built by `build-reftree`, together with the NCBI taxdump used by `query`.
 Each `reftree_YYYYMMDD` release has the following assets:
 
-| Asset                  | Contents                                               |
-| :--------------------- | :----------------------------------------------------- |
-| `taxdump.tar.gz`       | NCBI taxdump shared by all virus families (`taxdump/`) |
-| `<VirusFamily>.tar.gz` | `build-reftree` outputs for one virus family           |
+| Asset                                   | Contents                                                                   |
+| :-------------------------------------- | :------------------------------------------------------------------------- |
+| `taxdump.tar.gz`                        | NCBI taxdump shared by all virus families (`taxdump/`)                     |
+| `<VirusFamily>.tar.gz`                  | `build-reftree` outputs for one virus family                               |
+| `<VirusFamily>.update-reference.tar.gz` | `update-reference` outputs for one virus family (optional, not for query)  |
 
 Download `taxdump.tar.gz` and the asset of `FAMILY`, and extract them into the default `--output-dir` location:
 
@@ -65,6 +66,17 @@ tar xzf ${FAMILY}.tar.gz -C output_dir
 ```
 
 Once extracted, `output_dir/` contains `taxdump/` and `build-reftree/{search,align,visualize}/<VirusFamily>/`.
+
+`<VirusFamily>.update-reference.tar.gz` is not needed for `query`.
+It contains the NCBI metadata and reference genomes the trees were built from, so that the inputs of a release can be traced later.
+Some are large (around 1 GB for Coronaviridae). Download it only when needed:
+
+```bash
+curl -fLO ${RELEASE_URL}/${REFTREE_TAG}/${FAMILY}.update-reference.tar.gz
+tar xzf ${FAMILY}.update-reference.tar.gz -C output_dir
+```
+
+Once extracted, `output_dir/` contains `update-reference/{fetch-metadata,fetch-genome}/<VirusFamily>/`.
 
 ### Curated RdRp DB
 
@@ -384,7 +396,7 @@ done
 
 #### 2. Create the archives
 
-Create `taxdump.tar.gz` and one archive per virus family:
+Create `taxdump.tar.gz` and, for each virus family, one archive of the `build-reftree` outputs and one of the `update-reference` outputs:
 
 ```bash
 mkdir -p reftree_assets
@@ -400,6 +412,9 @@ for FASTA in reference/rdrp_db/*.rdrp.clean.fasta; do
     "build-reftree/search/${FAMILY}" \
     "build-reftree/align/${FAMILY}" \
     "build-reftree/visualize/${FAMILY}"
+  tar czf "reftree_assets/${FAMILY}.update-reference.tar.gz" -C output_dir \
+    "update-reference/fetch-metadata/${FAMILY}" \
+    "update-reference/fetch-genome/${FAMILY}"
 done
 ```
 
@@ -407,6 +422,7 @@ done
 
 Record the `rdrp_db_YYYYMMDD` release used in step 1 in the release notes, so that users can download the matching Curated RdRp DB.
 Make sure `reftree_assets/` contains only the archives created in step 2.
+GitHub Releases accept only files under 2 GiB; split any archive larger than that before uploading.
 
 ```bash
 DATE=$(date +%Y%m%d)
