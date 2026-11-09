@@ -47,11 +47,11 @@ FAMILY=Bornaviridae
 Reference alignments and trees built by `build-reftree`, together with the NCBI taxdump used by `query`.
 Each `reftree_YYYYMMDD` release has the following assets:
 
-| Asset                                   | Contents                                                                   |
-| :-------------------------------------- | :------------------------------------------------------------------------- |
-| `taxdump.tar.gz`                        | NCBI taxdump shared by all virus families (`taxdump/`)                     |
-| `<VirusFamily>.tar.gz`                  | `build-reftree` outputs for one virus family                               |
-| `<VirusFamily>.update-reference.tar.gz` | `update-reference` outputs for one virus family (optional, not for query)  |
+| Asset                                   | Contents                                                                  |
+| :-------------------------------------- | :------------------------------------------------------------------------ |
+| `taxdump.tar.gz`                        | NCBI taxdump shared by all virus families (`taxdump/`)                    |
+| `<VirusFamily>.tar.gz`                  | `build-reftree` outputs for one virus family                              |
+| `<VirusFamily>.update-reference.tar.gz` | `update-reference` outputs for one virus family (optional, not for query) |
 
 Download `taxdump.tar.gz` and the asset of `FAMILY`, and extract them into the default `--output-dir` location:
 
@@ -427,11 +427,17 @@ GitHub Releases accept only files under 2 GiB; split any archive larger than tha
 ```bash
 DATE=$(date +%Y%m%d)
 RDRP_DB_TAG=rdrp_db_YYYYMMDD  # The Curated RdRp DB release used to build the trees
+NCBI_RETRIEVED_DATE=YYYY-MM-DD  # The date update-reference was run
 git tag reftree_${DATE}
 git push origin reftree_${DATE}
 gh release create reftree_${DATE} \
   --title "Reference Tree Data (${DATE})" \
-  --notes "Built with Curated RdRp DB: ${RDRP_DB_TAG}" \
+  --notes "Built with Curated RdRp DB: ${RDRP_DB_TAG}
+
+Sequence data and metadata in this release were obtained from NCBI (retrieved ${NCBI_RETRIEVED_DATE}).
+NCBI places no restrictions on the use or distribution of these data; however,
+submitters or countries of origin may claim intellectual property rights.
+See https://www.ncbi.nlm.nih.gov/home/about/policies/ for details." \
   --latest=false \
   reftree_assets/*.tar.gz
 ```
