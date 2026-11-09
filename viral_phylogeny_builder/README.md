@@ -95,6 +95,35 @@ Once extracted, pass `reference/rdrp_db/<VirusFamily>.rdrp.clean.fasta` to `--rd
 
 To set up more virus families later, download only their `<VirusFamily>.tar.gz` from the same `reftree_YYYYMMDD` release. To set up every virus family at once, see [Downloading All Reference Trees](#downloading-all-reference-trees).
 
+## Tutorial: Run with example data
+
+The `example/` directory contains a query FASTA and its host CSV:
+
+- `dengue.fasta`: Dengue virus 4 complete genome (NCBI RefSeq [NC_002640.1](https://www.ncbi.nlm.nih.gov/nuccore/NC_002640.1))
+- `dengue_host.csv`: Host of the contig (`Homo sapiens`)
+
+> [!IMPORTANT]
+> Reference data for `Flaviviridae` must be set up before running. See [Reference Data](#reference-data) above and set `FAMILY=Flaviviridae`.
+
+```bash
+viral_phylogeny_builder query run --virus-family Flaviviridae \
+  --input-fasta example/dengue.fasta \
+  --host-csv example/dengue_host.csv \
+  --reference-alignment output_dir/build-reftree/align/Flaviviridae/Flaviviridae.final.faa \
+  --reference-taxon-csv output_dir/build-reftree/visualize/Flaviviridae/Flaviviridae.tree_metadata.csv \
+  --rdrp-db reference/rdrp_db/Flaviviridae.rdrp.clean.fasta
+```
+
+This will:
+
+1. Extract RdRp ORFs from the query contig (getorf + BLASTP)
+2. Add the query RdRp to the reference alignment (MAFFT `--add` + trimAl)
+3. Build the tree with IQ-TREE and render it under `output_dir/query/visualize/Flaviviridae/`
+
+![Example figure (dengue.fasta on the Flaviviridae reference tree), trimmed around NC_002640](./example/figures/dengue_Flaviviridae_tree.png)
+
+The figure above is trimmed for display. The original figures are [`example/figures/Flaviviridae.tree.pdf`](./example/figures/Flaviviridae.tree.pdf) and [`example/figures/Flaviviridae.tree_legend.pdf`](./example/figures/Flaviviridae.tree_legend.pdf).
+
 ## Quick Start
 
 Place query contigs onto the reference tree of `FAMILY` (set in [Reference Data](#reference-data)) with the `query run` subcommand:
