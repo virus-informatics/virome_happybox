@@ -72,7 +72,7 @@ def _run_rscript(
     output_pdf: Path,
     reference_taxon_csv: Path,
     *,
-    midpoint_rooting: bool = False,
+    midpoint_rooting: bool,
     rscript_cmd: str = "Rscript",
 ) -> None:
     r_script = _resolve_r_script()
@@ -123,7 +123,7 @@ def run_query_visualize(
     taxdump_dir: Path,
     threads: int = 4,
     force: bool = False,
-    midpoint_rooting: bool = False,
+    midpoint_rooting: bool = True,
     tool_config: dict[str, str] | None = None,
 ) -> Path:
     """Run query visualize pipeline and return path to treefile."""

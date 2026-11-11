@@ -133,7 +133,7 @@ See [Tool Path Configuration](#tool-path-configuration) for `--tool-config`.
 | `--reference-taxon-csv` |    Y     | -                   | Reference taxon CSV (`<family>.tree_metadata.csv` from `build-reftree visualize`) |
 | `--rdrp-db`             |    Y     | -                   | Curated RdRp FASTA                                                                |
 | `--threads`             |    N     | `4`                 | Number of threads                                                                 |
-| `--midpoint-rooting`    |    N     | off                 | Apply midpoint rooting to the tree before visualization                           |
+| `--disable-midpoint`    |    N     | off                 | Disable midpoint rooting of the tree                                              |
 | `--blastp-evalue`       |    N     | `1e-05`             | BLASTP E-value threshold                                                          |
 | `--gap-threshold-pct`   |    N     | `70`                | Maximum gap percentage for sequence filtering                                     |
 | `--taxdump-dir`         |    N     | `reference/taxdump` | Directory holding the NCBI taxdump that taxonkit reads                            |
@@ -256,7 +256,7 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 | `--reference-metadata-csv` |    Y     | -       | Reference metadata CSV (from `update-reference fetch-metadata`) |
 | `--rdrp-db`                |    Y     | -       | Curated RdRp FASTA                                              |
 | `--threads`                |    N     | `4`     | Number of threads                                               |
-| `--midpoint-rooting`       |    N     | off     | Apply midpoint rooting to the tree before visualization         |
+| `--disable-midpoint`       |    N     | off     | Disable midpoint rooting of the tree                            |
 
 ### Individual steps
 

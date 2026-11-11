@@ -73,7 +73,7 @@ def _run_rscript(
     tree_metadata_csv: Path,
     output_pdf: Path,
     *,
-    midpoint_rooting: bool = False,
+    midpoint_rooting: bool,
     rscript_cmd: str = "Rscript",
 ) -> None:
     r_script = _resolve_r_script()
@@ -124,7 +124,7 @@ def run_build_reftree_visualize(
     *,
     threads: int = 4,
     force: bool = False,
-    midpoint_rooting: bool = False,
+    midpoint_rooting: bool = True,
     tool_config: dict[str, str] | None = None,
 ) -> Path:
     """Run build-reftree visualize pipeline and return path to treefile."""

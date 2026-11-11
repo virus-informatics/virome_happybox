@@ -62,7 +62,8 @@ def add_virus_family_option(parser: argparse.ArgumentParser) -> None:
 
 def add_midpoint_rooting_option(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
-        "--midpoint-rooting",
-        action="store_true",
-        help="Apply midpoint rooting to the tree before visualization",
+        "--disable-midpoint",
+        dest="midpoint_rooting",
+        action="store_false",
+        help="Disable midpoint rooting of the tree",
     )
