@@ -1,6 +1,6 @@
 [project]
 name = "viral_read_quantifier"
-version = "1.0.0"
+version = "1.1.0"
 description = "Virome analysis — RNA-seq read mapping"
 readme = "README.md"
 authors = [
