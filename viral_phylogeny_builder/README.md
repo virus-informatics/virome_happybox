@@ -121,7 +121,7 @@ The following options are available on every subcommand.
 | `--force`            |    N     | -                                                                     | Re-run even if output already exists     |
 | `--tool-config`      |    N     | `config.toml` (if present)                                            | TOML file with external tool paths       |
 
-See [Tool Path Configuration](#tool-path-configuration) for `--tool-config`.
+See [Configuring Custom Tool Paths](#configuring-custom-tool-paths) for `--tool-config`.
 
 ### query run Options
 
@@ -199,11 +199,11 @@ For the full list of options:
 viral_phylogeny_builder query <subcommand> --help
 ```
 
-## Building Reference Trees
+## Advanced Usage
 
-> [!IMPORTANT]
-> Most users should use the pre-built reference trees from GitHub Releases (see [Prerequisite: Setting Up Reference Data](#prerequisite-setting-up-reference-data)).
-> This section is only for users who need to rebuild the reference trees from NCBI themselves.
+### Building Reference Trees with Custom Sequences
+
+For users who want to build their own reference phylogenetic trees, either from NCBI data or from a custom sequence dataset.
 
 Reference trees are built per virus family with `update-reference` followed by `build-reftree`.
 The Curated RdRp DB is required.
@@ -221,7 +221,7 @@ viral_phylogeny_builder build-reftree run --virus-family ${FAMILY} \
   --rdrp-db reference/rdrp_db/${FAMILY}.rdrp.clean.fasta
 ```
 
-### Inputs of the Published Reference Trees
+#### Inputs of the Published Reference Trees
 
 Each `reftree_YYYYMMDD` release also has `<VirusFamily>.update-reference.tar.gz`, the `update-reference` outputs for one virus family.
 It is not needed for `query`.
@@ -235,7 +235,7 @@ tar xzf ${FAMILY}.update-reference.tar.gz -C reference
 
 Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-genome}/<VirusFamily>/`.
 
-### update-reference run Options
+#### update-reference run Options
 
 | Option                  | Required | Default                | Description                              |
 | :---------------------- | :------: | :--------------------- | :--------------------------------------- |
@@ -248,7 +248,7 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 > Use `--update-taxdump` to explicitly update taxdump to the latest version.
 > When `--taxdump-dir` is given, the directory is only checked for the required files and is never downloaded into.
 
-### build-reftree run Options
+#### build-reftree run Options
 
 | Option                     | Required | Default | Description                                                     |
 | :------------------------- | :------: | :------ | :-------------------------------------------------------------- |
@@ -258,7 +258,7 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 | `--threads`                |    N     | `4`     | Number of threads                                               |
 | `--disable-midpoint`       |    N     | off     | Disable midpoint rooting of the tree                            |
 
-### Individual steps
+#### Individual steps
 
 | Command            | Subcommand       | Description                                                   | Required options                                                          |
 | :----------------- | :--------------- | :------------------------------------------------------------ | :------------------------------------------------------------------------ |
@@ -268,7 +268,7 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 | `build-reftree`    | `align`          | Multiple sequence alignment via MAFFT + trimAl                | `--rdrp-fasta`, `--rdrp-metadata-csv` (from `search`)                     |
 | `build-reftree`    | `visualize`      | Build the tree (IQ-TREE) and render it                        | `--alignment-fasta` (from `align`), `--rdrp-metadata-csv` (from `search`) |
 
-### Output directory structure
+#### Output directory structure
 
 ```
 <output-dir>/
@@ -295,7 +295,9 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
         └── <family>.tree_legend.pdf
 ```
 
-## Tool Path Configuration
+### Configuring Custom Tool Paths
+
+For users who want to use specific versions or installations of external tools.
 
 When running outside the conda environment, the paths of external tools can be specified in a TOML file.
 
@@ -375,7 +377,7 @@ gh release create rdrp_db_${DATE} \
 
 #### 1. Build reference trees
 
-See [Building Reference Trees](#building-reference-trees) and run `update-reference run` and `build-reftree run` for every virus family in `reference/rdrp_db/`.
+See [Building Reference Trees with Custom Sequences](#building-reference-trees-with-custom-sequences) and run `update-reference run` and `build-reftree run` for every virus family in `reference/rdrp_db/`.
 
 Remove the outputs of earlier runs and downloaded reference trees from `reference/` first, so that they do not end up in the archives of step 2. Keep `reference/rdrp_db/`, which is the input.
 
