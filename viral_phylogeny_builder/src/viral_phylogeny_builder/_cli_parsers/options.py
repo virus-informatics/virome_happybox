@@ -9,16 +9,20 @@ import argparse
 from pathlib import Path
 
 _DEFAULT_OUTDIR = Path("output_dir")
+DEFAULT_REFERENCE_OUTDIR = Path("reference")
 _DEFAULT_THREADS = 4
 
 
-def add_output_dir_option(parser: argparse.ArgumentParser) -> None:
+def add_output_dir_option(
+    parser: argparse.ArgumentParser,
+    default: Path = _DEFAULT_OUTDIR,
+) -> None:
     parser.add_argument(
         "-o",
         "--output-dir",
         type=Path,
-        default=_DEFAULT_OUTDIR,
-        help=f"Output directory (default: {_DEFAULT_OUTDIR})",
+        default=default,
+        help=f"Output directory (default: {default})",
     )
 
 

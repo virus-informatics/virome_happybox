@@ -120,6 +120,7 @@ def run_query_visualize(
     reference_taxon_csv: Path,
     output_dir: Path,
     *,
+    taxdump_dir: Path,
     threads: int = 4,
     force: bool = False,
     midpoint_rooting: bool = False,
@@ -156,7 +157,7 @@ def run_query_visualize(
                 host_csv=host_csv,
                 virus_family=virus_family,
                 output_csv=staging_path,
-                output_dir=output_dir,
+                taxdump_dir=taxdump_dir,
                 taxonkit_cmd=resolved["taxonkit"],
             )
             validate_step_output(staging_path, "query metadata CSV")

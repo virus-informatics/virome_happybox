@@ -204,7 +204,7 @@ def _run_taxonkit_lineage(
 def _resolve_hosts(
     hosts: set[str],
     rules: tuple[HostManualKeyRule, ...],
-    taxdump_dir: Path | None,
+    taxdump_dir: Path,
     *,
     taxonkit_cmd: str = "taxonkit",
 ) -> dict[str, tuple[str, str]]:
@@ -221,7 +221,7 @@ def _resolve_hosts(
             result[h] = (UNKNOWN, UNKNOWN)
         return result
 
-    data_dir_args = ["--data-dir", str(taxdump_dir)] if taxdump_dir else []
+    data_dir_args = ["--data-dir", str(taxdump_dir)]
 
     name_to_taxid = _run_taxonkit_name2taxid(resolvable, data_dir_args, taxonkit_cmd=taxonkit_cmd)
 
@@ -259,14 +259,6 @@ def _resolve_hosts(
     return result
 
 
-def _find_taxdump_dir(output_dir: Path) -> Path | None:
-    """Check for a taxdump directory from a prior update-reference run."""
-    candidate = output_dir / "taxdump"
-    if candidate.is_dir() and (candidate / "names.dmp").exists():
-        return candidate
-    return None
-
-
 def prepare_query_metadata(
     name_map_tsv: Path,
     alignment_fasta: Path,
@@ -274,7 +266,7 @@ def prepare_query_metadata(
     virus_family: str,
     output_csv: Path,
     *,
-    output_dir: Path | None = None,
+    taxdump_dir: Path,
     taxonkit_cmd: str = "taxonkit",
 ) -> None:
     """Build added-sequence taxonomy metadata CSV.
@@ -327,7 +319,6 @@ def prepare_query_metadata(
 
     # ── 2. Resolve host → lineage → manual_host, then overwrite (archive L508-516) ──
     unique_hosts = {row["Host"] for row in rows}
-    taxdump_dir = _find_taxdump_dir(output_dir) if output_dir else None
     host_taxonomy = _resolve_hosts(unique_hosts, rules, taxdump_dir, taxonkit_cmd=taxonkit_cmd)
 
     for row in rows:

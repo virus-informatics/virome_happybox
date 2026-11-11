@@ -43,7 +43,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         required=True,
         help="Curated RdRp reference FASTA",
     )
-    options.add_output_dir_option(p_s)
+    options.add_output_dir_option(p_s, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_threads_option(p_s)
     options.add_force_option(p_s)
     options.add_tool_config_option(p_s)
@@ -66,7 +66,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         required=True,
         help="RdRp metadata CSV (from search)",
     )
-    options.add_output_dir_option(p_a)
+    options.add_output_dir_option(p_a, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_threads_option(p_a)
     options.add_force_option(p_a)
     options.add_tool_config_option(p_a)
@@ -89,7 +89,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         required=True,
         help="RdRp metadata CSV (from search)",
     )
-    options.add_output_dir_option(p_v)
+    options.add_output_dir_option(p_v, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_threads_option(p_v)
     options.add_force_option(p_v)
     options.add_midpoint_rooting_option(p_v)
@@ -119,7 +119,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         required=True,
         help="Curated RdRp reference FASTA",
     )
-    options.add_output_dir_option(p_run)
+    options.add_output_dir_option(p_run, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_threads_option(p_run)
     options.add_force_option(p_run)
     options.add_midpoint_rooting_option(p_run)

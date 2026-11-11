@@ -18,82 +18,49 @@ conda activate viral_phylogeny_builder
 
 This installs `viral_phylogeny_builder` with the `update-reference`, `build-reftree`, and `query` commands.
 
-## Reference Data
+## Prerequisite: Setting Up Reference Data
 
-`query` requires two pre-built reference data sets, published as separate GitHub Releases:
+`query` requires the following pre-built reference data, published as two GitHub Releases.
+Extract all of them into `reference/`.
 
-| Data set                            | Release tag        | Extract into  |
-| :---------------------------------- | :----------------- | :------------ |
-| [Reference Trees](#reference-trees) | `reftree_YYYYMMDD` | `output_dir/` |
-| [Curated RdRp DB](#curated-rdrp-db) | `rdrp_db_YYYYMMDD` | `reference/`  |
+| Asset                     | Release tag        | Contents                                                                                                                    |
+| :------------------------ | :----------------- | :-------------------------------------------------------------------------------------------------------------------------- |
+| `reftree_YYYYMMDD.tar.gz` | `reftree_YYYYMMDD` | Reference alignment (`--reference-alignment`), reference taxon CSV (`--reference-taxon-csv`) and tree of every virus family |
+| `rdrp_db_YYYYMMDD.tar.gz` | `rdrp_db_YYYYMMDD` | Curated RdRp FASTA of every virus family (`--rdrp-db`)                                                                      |
+| `taxdump.tar.gz`          | `reftree_YYYYMMDD` | NCBI taxdump used to resolve host names                                                                                     |
 
-The two are versioned independently, so their dates usually differ.
+The two releases are versioned independently, so their dates usually differ.
 Pick the latest [`reftree_YYYYMMDD` release](https://github.com/virus-informatics/virome_happybox/releases?q=reftree&expanded=true), and use the `rdrp_db_YYYYMMDD` release named in its release notes, which is the one the reference trees were built with.
-
-Start with a single virus family. The commands below use `FAMILY` for the virus family to analyze.
 
 ```bash
 # Replace with the actual tags from the release pages
 REFTREE_TAG=reftree_YYYYMMDD
 RDRP_DB_TAG=rdrp_db_YYYYMMDD
+
 RELEASE_URL=https://github.com/virus-informatics/virome_happybox/releases/download
 
-# Virus family to analyze
-FAMILY=Bornaviridae
-```
-
-### Reference Trees
-
-Reference alignments and trees built by `build-reftree`, together with the NCBI taxdump used by `query`.
-Each `reftree_YYYYMMDD` release has the following assets:
-
-| Asset                                   | Contents                                                                  |
-| :-------------------------------------- | :------------------------------------------------------------------------ |
-| `taxdump.tar.gz`                        | NCBI taxdump shared by all virus families (`taxdump/`)                    |
-| `<VirusFamily>.tar.gz`                  | `build-reftree` outputs for one virus family                              |
-| `<VirusFamily>.update-reference.tar.gz` | `update-reference` outputs for one virus family (optional, not for query) |
-
-Download `taxdump.tar.gz` and the asset of `FAMILY`, and extract them into the default `--output-dir` location:
-
-```bash
-mkdir -p output_dir
-
-curl -fLO ${RELEASE_URL}/${REFTREE_TAG}/taxdump.tar.gz
-tar xzf taxdump.tar.gz -C output_dir
-
-curl -fLO ${RELEASE_URL}/${REFTREE_TAG}/${FAMILY}.tar.gz
-tar xzf ${FAMILY}.tar.gz -C output_dir
-```
-
-Once extracted, `output_dir/` contains `taxdump/` and `build-reftree/{search,align,visualize}/<VirusFamily>/`.
-
-`<VirusFamily>.update-reference.tar.gz` is not needed for `query`.
-It contains the NCBI metadata and reference genomes the trees were built from, so that the inputs of a release can be traced later.
-Some are large (around 1 GB for Coronaviridae). Download it only when needed:
-
-```bash
-curl -fLO ${RELEASE_URL}/${REFTREE_TAG}/${FAMILY}.update-reference.tar.gz
-tar xzf ${FAMILY}.update-reference.tar.gz -C output_dir
-```
-
-Once extracted, `output_dir/` contains `update-reference/{fetch-metadata,fetch-genome}/<VirusFamily>/`.
-
-### Curated RdRp DB
-
-Curated RdRp FASTA for each virus family, passed to `--rdrp-db`.
-Each `rdrp_db_YYYYMMDD` release has a single asset `rdrp_db_YYYYMMDD.tar.gz` containing all virus families.
-
-```bash
-curl -fLO ${RELEASE_URL}/${RDRP_DB_TAG}/${RDRP_DB_TAG}.tar.gz
-
-# Extract into reference/rdrp_db (existing files are overwritten)
 mkdir -p reference
-tar xzf ${RDRP_DB_TAG}.tar.gz -C reference
+
+# Reference Trees
+curl -fLO "${RELEASE_URL}/${REFTREE_TAG}/${REFTREE_TAG}.tar.gz"
+tar xzf "${REFTREE_TAG}.tar.gz" -C reference
+
+curl -fLO "${RELEASE_URL}/${REFTREE_TAG}/taxdump.tar.gz"
+tar xzf taxdump.tar.gz -C reference
+
+# Curated RdRp DB
+curl -fLO "${RELEASE_URL}/${RDRP_DB_TAG}/${RDRP_DB_TAG}.tar.gz"
+tar xzf "${RDRP_DB_TAG}.tar.gz" -C reference
 ```
 
-Once extracted, pass `reference/rdrp_db/<VirusFamily>.rdrp.clean.fasta` to `--rdrp-db`.
+Once extracted, `reference/` contains:
 
-To set up more virus families later, download only their `<VirusFamily>.tar.gz` from the same `reftree_YYYYMMDD` release. To set up every virus family at once, see [Downloading All Reference Trees](#downloading-all-reference-trees).
+```
+reference/
+├── taxdump/
+├── rdrp_db/<VirusFamily>.rdrp.clean.fasta
+└── build-reftree/{search,align,visualize}/<VirusFamily>/
+```
 
 ## Tutorial: Run with example data
 
@@ -103,14 +70,14 @@ The `example/` directory contains a query FASTA and its host CSV:
 - `dengue_host.csv`: Host of the contig (`Homo sapiens`)
 
 > [!IMPORTANT]
-> Reference data for `Flaviviridae` must be set up before running. See [Reference Data](#reference-data) above and set `FAMILY=Flaviviridae`.
+> Reference data must be set up before running. See [Prerequisite: Setting Up Reference Data](#prerequisite-setting-up-reference-data) above.
 
 ```bash
 viral_phylogeny_builder query run --virus-family Flaviviridae \
   --input-fasta example/dengue.fasta \
   --host-csv example/dengue_host.csv \
-  --reference-alignment output_dir/build-reftree/align/Flaviviridae/Flaviviridae.final.faa \
-  --reference-taxon-csv output_dir/build-reftree/visualize/Flaviviridae/Flaviviridae.tree_metadata.csv \
+  --reference-alignment reference/build-reftree/align/Flaviviridae/Flaviviridae.final.faa \
+  --reference-taxon-csv reference/build-reftree/visualize/Flaviviridae/Flaviviridae.tree_metadata.csv \
   --rdrp-db reference/rdrp_db/Flaviviridae.rdrp.clean.fasta
 ```
 
@@ -126,14 +93,14 @@ The figure above is trimmed for display. The original figures are [`example/figu
 
 ## Quick Start
 
-Place query contigs onto the reference tree of `FAMILY` (set in [Reference Data](#reference-data)) with the `query run` subcommand:
+Place query contigs onto the reference tree of `FAMILY` with the `query run` subcommand:
 
 ```bash
 viral_phylogeny_builder query run --virus-family ${FAMILY} \
   --input-fasta <query.fasta> \
   --host-csv <host.csv> \
-  --reference-alignment output_dir/build-reftree/align/${FAMILY}/${FAMILY}.final.faa \
-  --reference-taxon-csv output_dir/build-reftree/visualize/${FAMILY}/${FAMILY}.tree_metadata.csv \
+  --reference-alignment reference/build-reftree/align/${FAMILY}/${FAMILY}.final.faa \
+  --reference-taxon-csv reference/build-reftree/visualize/${FAMILY}/${FAMILY}.tree_metadata.csv \
   --rdrp-db reference/rdrp_db/${FAMILY}.rdrp.clean.fasta
 ```
 
@@ -147,31 +114,32 @@ viral_phylogeny_builder query run --help
 
 The following options are available on every subcommand.
 
-| Option               | Required | Default                    | Description                              |
-| :------------------- | :------: | :------------------------- | :--------------------------------------- |
-| `--virus-family`     |    Y     | -                          | Virus family name (e.g. `Coronaviridae`) |
-| `-o`, `--output-dir` |    N     | `output_dir`               | Output directory                         |
-| `--force`            |    N     | -                          | Re-run even if output already exists     |
-| `--tool-config`      |    N     | `config.toml` (if present) | TOML file with external tool paths       |
+| Option               | Required | Default                                                               | Description                              |
+| :------------------- | :------: | :-------------------------------------------------------------------- | :--------------------------------------- |
+| `--virus-family`     |    Y     | -                                                                     | Virus family name (e.g. `Coronaviridae`) |
+| `-o`, `--output-dir` |    N     | `output_dir` (`reference` for `update-reference` and `build-reftree`) | Output directory                         |
+| `--force`            |    N     | -                                                                     | Re-run even if output already exists     |
+| `--tool-config`      |    N     | `config.toml` (if present)                                            | TOML file with external tool paths       |
 
 See [Tool Path Configuration](#tool-path-configuration) for `--tool-config`.
 
 ### query run Options
 
-| Option                  | Required | Default | Description                                                                       |
-| :---------------------- | :------: | :------ | :-------------------------------------------------------------------------------- |
-| `--input-fasta`         |    Y     | -       | Query nucleotide FASTA                                                            |
-| `--host-csv`            |    Y     | -       | Per-contig host annotation CSV (see [Host CSV](#host-csv))                        |
-| `--reference-alignment` |    Y     | -       | Reference alignment (`<family>.final.faa` from `build-reftree align`)             |
-| `--reference-taxon-csv` |    Y     | -       | Reference taxon CSV (`<family>.tree_metadata.csv` from `build-reftree visualize`) |
-| `--rdrp-db`             |    Y     | -       | Curated RdRp FASTA (see [Curated RdRp DB](#curated-rdrp-db))                      |
-| `--threads`             |    N     | `4`     | Number of threads                                                                 |
-| `--midpoint-rooting`    |    N     | off     | Apply midpoint rooting to the tree before visualization                           |
-| `--blastp-evalue`       |    N     | `1e-05` | BLASTP E-value threshold                                                          |
-| `--gap-threshold-pct`   |    N     | `70`    | Maximum gap percentage for sequence filtering                                     |
+| Option                  | Required | Default             | Description                                                                       |
+| :---------------------- | :------: | :------------------ | :-------------------------------------------------------------------------------- |
+| `--input-fasta`         |    Y     | -                   | Query nucleotide FASTA                                                            |
+| `--host-csv`            |    Y     | -                   | Per-contig host annotation CSV (see [Host CSV](#host-csv))                        |
+| `--reference-alignment` |    Y     | -                   | Reference alignment (`<family>.final.faa` from `build-reftree align`)             |
+| `--reference-taxon-csv` |    Y     | -                   | Reference taxon CSV (`<family>.tree_metadata.csv` from `build-reftree visualize`) |
+| `--rdrp-db`             |    Y     | -                   | Curated RdRp FASTA                                                                |
+| `--threads`             |    N     | `4`                 | Number of threads                                                                 |
+| `--midpoint-rooting`    |    N     | off                 | Apply midpoint rooting to the tree before visualization                           |
+| `--blastp-evalue`       |    N     | `1e-05`             | BLASTP E-value threshold                                                          |
+| `--gap-threshold-pct`   |    N     | `70`                | Maximum gap percentage for sequence filtering                                     |
+| `--taxdump-dir`         |    N     | `reference/taxdump` | Directory holding the NCBI taxdump that taxonkit reads                            |
 
 > [!NOTE]
-> Host names in `--host-csv` are resolved with taxonkit using `<output-dir>/taxdump`, which is included in the [Reference Trees](#reference-trees) asset.
+> Host names in `--host-csv` are resolved with taxonkit using the NCBI taxdump in `--taxdump-dir`.
 
 ## Input File Formats
 
@@ -231,31 +199,14 @@ For the full list of options:
 viral_phylogeny_builder query <subcommand> --help
 ```
 
-## Downloading All Reference Trees
-
-Optional. Downloads the reference trees of every virus family in the [Curated RdRp DB](#curated-rdrp-db), instead of picking them one by one.
-Run it after setting `REFTREE_TAG` / `RELEASE_URL` and extracting `taxdump.tar.gz` and the Curated RdRp DB as described in [Reference Data](#reference-data).
-Virus families without a reference tree asset in the release are skipped with a warning.
-
-```bash
-for FASTA in reference/rdrp_db/*.rdrp.clean.fasta; do
-  FAMILY=$(basename "${FASTA}" .rdrp.clean.fasta)
-  if ! curl -fLO "${RELEASE_URL}/${REFTREE_TAG}/${FAMILY}.tar.gz"; then
-    echo "WARN: reference tree asset not found, skipping ${FAMILY}" >&2
-    continue
-  fi
-  tar xzf "${FAMILY}.tar.gz" -C output_dir
-done
-```
-
 ## Building Reference Trees
 
 > [!IMPORTANT]
-> Most users should use the pre-built reference trees from GitHub Releases (see [Reference Trees](#reference-trees)).
+> Most users should use the pre-built reference trees from GitHub Releases (see [Prerequisite: Setting Up Reference Data](#prerequisite-setting-up-reference-data)).
 > This section is only for users who need to rebuild the reference trees from NCBI themselves.
 
 Reference trees are built per virus family with `update-reference` followed by `build-reftree`.
-The [Curated RdRp DB](#curated-rdrp-db) is required.
+The Curated RdRp DB is required.
 
 ```bash
 FAMILY=Bornaviridae
@@ -265,10 +216,24 @@ viral_phylogeny_builder update-reference run --virus-family ${FAMILY}
 
 # 2. Build the reference tree
 viral_phylogeny_builder build-reftree run --virus-family ${FAMILY} \
-  --genome-fasta output_dir/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna \
-  --reference-metadata-csv output_dir/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv \
+  --genome-fasta reference/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna \
+  --reference-metadata-csv reference/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv \
   --rdrp-db reference/rdrp_db/${FAMILY}.rdrp.clean.fasta
 ```
+
+### Inputs of the Published Reference Trees
+
+Each `reftree_YYYYMMDD` release also has `<VirusFamily>.update-reference.tar.gz`, the `update-reference` outputs for one virus family.
+It is not needed for `query`.
+It contains the NCBI metadata and reference genomes the trees were built from, so that the inputs of a release can be traced later.
+Some are large (around 1 GB for Coronaviridae). Download it only when needed:
+
+```bash
+curl -fLO ${RELEASE_URL}/${REFTREE_TAG}/${FAMILY}.update-reference.tar.gz
+tar xzf ${FAMILY}.update-reference.tar.gz -C reference
+```
+
+Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-genome}/<VirusFamily>/`.
 
 ### update-reference run Options
 
@@ -289,7 +254,7 @@ viral_phylogeny_builder build-reftree run --virus-family ${FAMILY} \
 | :------------------------- | :------: | :------ | :-------------------------------------------------------------- |
 | `--genome-fasta`           |    Y     | -       | Reference genome FASTA (from `update-reference fetch-genome`)   |
 | `--reference-metadata-csv` |    Y     | -       | Reference metadata CSV (from `update-reference fetch-metadata`) |
-| `--rdrp-db`                |    Y     | -       | Curated RdRp FASTA (see [Curated RdRp DB](#curated-rdrp-db))    |
+| `--rdrp-db`                |    Y     | -       | Curated RdRp FASTA                                              |
 | `--threads`                |    N     | `4`     | Number of threads                                               |
 | `--midpoint-rooting`       |    N     | off     | Apply midpoint rooting to the tree before visualization         |
 
@@ -365,14 +330,14 @@ conda activate viral_phylogeny_builder
 
 ### "Curated RdRp FASTA not found" / "RdRp protein DB FASTA not found"
 
-The `--rdrp-db` path does not exist. Download and extract the [Curated RdRp DB](#curated-rdrp-db) and check that `reference/rdrp_db/<VirusFamily>.rdrp.clean.fasta` exists for the target family.
+The `--rdrp-db` path does not exist. Set up the reference data as described in [Prerequisite: Setting Up Reference Data](#prerequisite-setting-up-reference-data) and check that `reference/rdrp_db/<VirusFamily>.rdrp.clean.fasta` exists for the target family.
 
 ### "taxonkit name2taxid failed" in query
 
-Ensure the taxdump files from the [Reference Trees](#reference-trees) asset exist under the `--output-dir` passed to `query`:
+Ensure the taxdump files exist in the `--taxdump-dir` passed to `query`:
 
 ```bash
-ls <output-dir>/taxdump/*.dmp
+ls <taxdump-dir>/*.dmp
 ```
 
 ## For Maintainers: Publishing Reference Data
@@ -412,36 +377,38 @@ gh release create rdrp_db_${DATE} \
 
 See [Building Reference Trees](#building-reference-trees) and run `update-reference run` and `build-reftree run` for every virus family in `reference/rdrp_db/`.
 
+Remove the outputs of earlier runs and downloaded reference trees from `reference/` first, so that they do not end up in the archives of step 2. Keep `reference/rdrp_db/`, which is the input.
+
 ```bash
+rm -rf reference/taxdump reference/update-reference reference/build-reftree
+
 for FASTA in reference/rdrp_db/*.rdrp.clean.fasta; do
   FAMILY=$(basename "${FASTA}" .rdrp.clean.fasta)
   viral_phylogeny_builder update-reference run --virus-family "${FAMILY}"
   viral_phylogeny_builder build-reftree run --virus-family "${FAMILY}" \
-    --genome-fasta "output_dir/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna" \
-    --reference-metadata-csv "output_dir/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv" \
+    --genome-fasta "reference/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna" \
+    --reference-metadata-csv "reference/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv" \
     --rdrp-db "${FASTA}"
 done
 ```
 
 #### 2. Create the archives
 
-Create `taxdump.tar.gz` and, for each virus family, one archive of the `build-reftree` outputs and one of the `update-reference` outputs:
+Create `taxdump.tar.gz`, one archive of the `build-reftree` outputs of every virus family, and, for each virus family, one archive of the `update-reference` outputs:
 
 ```bash
+DATE=$(date +%Y%m%d)
 mkdir -p reftree_assets
-tar czf reftree_assets/taxdump.tar.gz -C output_dir taxdump
+tar czf reftree_assets/taxdump.tar.gz -C reference taxdump
+tar czf "reftree_assets/reftree_${DATE}.tar.gz" -C reference build-reftree
 
 for FASTA in reference/rdrp_db/*.rdrp.clean.fasta; do
   FAMILY=$(basename "${FASTA}" .rdrp.clean.fasta)
-  if [ ! -d "output_dir/build-reftree/visualize/${FAMILY}" ]; then
+  if [ ! -d "reference/build-reftree/visualize/${FAMILY}" ]; then
     echo "WARN: build-reftree outputs not found, skipping ${FAMILY}" >&2
     continue
   fi
-  tar czf "reftree_assets/${FAMILY}.tar.gz" -C output_dir \
-    "build-reftree/search/${FAMILY}" \
-    "build-reftree/align/${FAMILY}" \
-    "build-reftree/visualize/${FAMILY}"
-  tar czf "reftree_assets/${FAMILY}.update-reference.tar.gz" -C output_dir \
+  tar czf "reftree_assets/${FAMILY}.update-reference.tar.gz" -C reference \
     "update-reference/fetch-metadata/${FAMILY}" \
     "update-reference/fetch-genome/${FAMILY}"
 done
@@ -454,7 +421,7 @@ Make sure `reftree_assets/` contains only the archives created in step 2.
 GitHub Releases accept only files under 2 GiB; split any archive larger than that before uploading.
 
 ```bash
-DATE=$(date +%Y%m%d)
+# Uses DATE from step 2 as is
 RDRP_DB_TAG=rdrp_db_YYYYMMDD  # The Curated RdRp DB release used to build the trees
 NCBI_RETRIEVED_DATE=YYYY-MM-DD  # The date update-reference was run
 git tag reftree_${DATE}

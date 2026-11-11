@@ -63,7 +63,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         help="Fetch NCBI virus metadata and select representative sequences",
     )
     options.add_virus_family_option(p_fm)
-    options.add_output_dir_option(p_fm)
+    options.add_output_dir_option(p_fm, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_force_option(p_fm)
     options.add_tool_config_option(p_fm)
     _add_exclude_virus_taxid_option(p_fm)
@@ -76,7 +76,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         help="Download reference genomes using accessions from fetch-metadata",
     )
     options.add_virus_family_option(p_fg)
-    options.add_output_dir_option(p_fg)
+    options.add_output_dir_option(p_fg, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_force_option(p_fg)
     options.add_tool_config_option(p_fg)
 
@@ -86,7 +86,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         help="Run full update-reference pipeline",
     )
     options.add_virus_family_option(p_run)
-    options.add_output_dir_option(p_run)
+    options.add_output_dir_option(p_run, default=options.DEFAULT_REFERENCE_OUTDIR)
     options.add_force_option(p_run)
     options.add_tool_config_option(p_run)
     _add_exclude_virus_taxid_option(p_run)

@@ -10,9 +10,11 @@ from pathlib import Path
 
 from viral_phylogeny_builder import _commands
 from viral_phylogeny_builder._cli_parsers import options
+from viral_phylogeny_builder.update_reference.taxdump import TAXDUMP_DIR_NAME
 
 _DEFAULT_BLASTP_EVALUE = 1e-5
 _DEFAULT_GAP_THRESHOLD_PCT = 70
+_DEFAULT_TAXDUMP_DIR = options.DEFAULT_REFERENCE_OUTDIR / TAXDUMP_DIR_NAME
 
 
 def _add_blastp_evalue_option(parser: argparse.ArgumentParser) -> None:
@@ -31,6 +33,18 @@ def _add_gap_threshold_pct_option(parser: argparse.ArgumentParser) -> None:
         default=_DEFAULT_GAP_THRESHOLD_PCT,
         help=(
             f"Maximum gap percentage for sequence filtering (default: {_DEFAULT_GAP_THRESHOLD_PCT})"
+        ),
+    )
+
+
+def _add_taxdump_dir_option(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--taxdump-dir",
+        type=Path,
+        default=_DEFAULT_TAXDUMP_DIR,
+        help=(
+            "Directory holding the NCBI taxdump that taxonkit reads"
+            f" (default: {_DEFAULT_TAXDUMP_DIR})"
         ),
     )
 
@@ -120,6 +134,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         required=True,
         help="Reference taxon metadata CSV (from build-reftree)",
     )
+    _add_taxdump_dir_option(p_v)
     options.add_output_dir_option(p_v)
     options.add_threads_option(p_v)
     options.add_force_option(p_v)
@@ -159,6 +174,7 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
         required=True,
         help="Curated RdRp protein DB FASTA",
     )
+    _add_taxdump_dir_option(p_run)
     options.add_output_dir_option(p_run)
     options.add_threads_option(p_run)
     options.add_force_option(p_run)
