@@ -9,6 +9,11 @@ build/
 .venv/
 .cache/
 
+# macOS
+.DS_Store
+._*
+__MACOSX/
+
 # Default output
 output_dir/
 
