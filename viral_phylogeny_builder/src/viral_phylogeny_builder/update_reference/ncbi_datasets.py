@@ -27,7 +27,7 @@ VIRUS_GENOME_METADATA_FIELDS = (
     "sourcedb",
 )
 
-# Display names dataformat writes for the fields above, verified against datasets 18.36.0
+# Display names dataformat writes for the fields above, verified against datasets 18.41.0
 NCBI_ACCESSION_COLUMN = "Accession"
 NCBI_VIRUS_TAXID_COLUMN = "Virus Taxonomic ID"
 NCBI_VIRUS_NAME_COLUMN = "Virus Name"

@@ -5,7 +5,7 @@ channels:
 dependencies:
   - python=3.12
   # datasets / dataformat are both shipped by ncbi-datasets-cli
-  - ncbi-datasets-cli=18.36.0
+  - ncbi-datasets-cli=18.41.0
   - taxonkit=0.20.0
   # getorf is shipped by emboss
   - emboss=6.6.0
