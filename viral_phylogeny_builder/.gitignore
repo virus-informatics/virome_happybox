@@ -16,6 +16,7 @@ __MACOSX/
 
 # Default output
 output_dir/
+/reference/
 
 # Tool path configuration
 config.toml
