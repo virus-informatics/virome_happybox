@@ -226,7 +226,7 @@ viral_phylogeny_builder build-reftree run --virus-family ${FAMILY} \
 Each `reftree_YYYYMMDD` release also has `<VirusFamily>.update-reference.tar.gz`, the `update-reference` outputs for one virus family.
 It is not needed for `query`.
 It contains the NCBI metadata and reference genomes the trees were built from, so that the inputs of a release can be traced later.
-Some are large (around 1 GB for Coronaviridae). Download it only when needed:
+Download it only when needed:
 
 ```bash
 curl -fLO ${RELEASE_URL}/${REFTREE_TAG}/${FAMILY}.update-reference.tar.gz
@@ -275,7 +275,7 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 ├── taxdump/                                  # NCBI taxdump for taxonkit
 ├── update-reference/
 │   ├── fetch-metadata/<family>/
-│   │   ├── virus_genome_metadata.csv         # All NCBI records for the family
+│   │   ├── virus_genome_metadata.csv         # NCBI records of complete sequences for the family
 │   │   ├── lineage.csv                       # Records with virus/host lineage
 │   │   ├── complete_length_filtered.csv      # COMPLETE records after length filtering
 │   │   ├── reference_metadata.csv            # One representative per virus taxid
@@ -342,7 +342,7 @@ The `--rdrp-db` path does not exist. Set up the reference data as described in [
 Error: Download error: stream error: stream ID 3; INTERNAL_ERROR; received from peer
 ```
 
-NCBI may interrupt the download of a large virus family (e.g. the metadata of Coronaviridae exceeds 880 MB).
+NCBI may interrupt the download.
 Run the same `update-reference run` command again. Steps that already completed are skipped, and the interrupted download starts over from the beginning.
 
 ### "taxonkit name2taxid failed" in query

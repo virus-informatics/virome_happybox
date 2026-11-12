@@ -145,7 +145,7 @@ def download_virus_genome_metadata(
     *,
     datasets_cmd: str = "datasets",
 ) -> None:
-    """Download the metadata-only virus genome package for a virus family.
+    """Download the metadata-only virus genome package of complete sequences for a virus family.
 
     stdout and stderr are inherited so that the progress display of datasets stays
     visible: a large family exceeds 100 MB and takes minutes to download.
@@ -159,6 +159,10 @@ def download_virus_genome_metadata(
         virus_family,
         "--include",
         "none",
+        # Reference selection uses only COMPLETE records
+        "--complete-only",
+        # is_valid_package checks the package with MD5 and CRC-32
+        "--fast-zip-validation",
         "--filename",
         str(zip_path),
     ]
