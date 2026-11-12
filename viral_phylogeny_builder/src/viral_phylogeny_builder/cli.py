@@ -89,6 +89,13 @@ def _dispatch_update_reference(args: argparse.Namespace) -> None:
     tool_config = _load_tool_config(args)
 
     match args.update_reference_command:
+        case _commands.UPDATE_REFERENCE_FETCH_TAXDUMP_SUBCOMMAND:
+            from viral_phylogeny_builder.update_reference.taxdump import (
+                TAXDUMP_DIR_NAME,
+                download_taxdump,
+            )
+
+            download_taxdump(args.output_dir / TAXDUMP_DIR_NAME)
         case _commands.UPDATE_REFERENCE_FETCH_METADATA_SUBCOMMAND:
             from viral_phylogeny_builder.update_reference.fetch_metadata import (
                 run_update_reference_fetch_metadata,

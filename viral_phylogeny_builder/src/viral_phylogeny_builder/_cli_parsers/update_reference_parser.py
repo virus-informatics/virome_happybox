@@ -57,6 +57,14 @@ def add_subcommands(parent: argparse._SubParsersAction) -> None:
     )
     sub = p_cmd.add_subparsers(dest="update_reference_command")
 
+    # fetch-taxdump
+    p_ft = sub.add_parser(
+        _commands.UPDATE_REFERENCE_FETCH_TAXDUMP_SUBCOMMAND,
+        help=f"Download/update NCBI taxdump into <output-dir>/{TAXDUMP_DIR_NAME}",
+    )
+    options.add_output_dir_option(p_ft, default=options.DEFAULT_REFERENCE_OUTDIR)
+    options.add_tool_config_option(p_ft)
+
     # fetch-metadata
     p_fm = sub.add_parser(
         _commands.UPDATE_REFERENCE_FETCH_METADATA_SUBCOMMAND,

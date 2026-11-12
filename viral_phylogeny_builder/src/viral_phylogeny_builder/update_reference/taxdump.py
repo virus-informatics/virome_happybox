@@ -11,6 +11,8 @@ import tarfile
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
+from http import HTTPStatus
 from io import BytesIO
 from pathlib import Path
 
@@ -30,13 +32,24 @@ _TAXDUMP_DOWNLOAD_CHUNK_BYTES = 1024 * 1024
 _TAXDUMP_DOWNLOAD_MAX_ATTEMPTS = 3
 _TAXDUMP_DOWNLOAD_BACKOFF_BASE_SEC = 2
 _TAXDUMP_PROGRESS_LOG_STEP_PCT = 10
+_TAXDUMP_HEAD_MAX_ATTEMPTS = 2
+_TAXDUMP_HEAD_BACKOFF_BASE_SEC = 5
 
 
 def _head_last_modified(url: str) -> str | None:
     request = urllib.request.Request(url, method="HEAD")
-    try:
+
+    def send_head() -> str | None:
         with urllib.request.urlopen(request) as response:  # noqa: S310
             return response.headers.get("Last-Modified")
+
+    try:
+        return _call_http_with_retry(
+            send_head,
+            label=f"{_NCBI_TAXDUMP_ARCHIVE_FILENAME} HEAD",
+            max_attempts=_TAXDUMP_HEAD_MAX_ATTEMPTS,
+            backoff_base_sec=_TAXDUMP_HEAD_BACKOFF_BASE_SEC,
+        )
     except urllib.error.HTTPError as e:
         raise FileNotFoundError(f"Remote file not found: {url} (HTTP {e.code})") from e
 
@@ -82,24 +95,41 @@ def _download_file(url: str, dest: Path) -> int:
     return downloaded_bytes
 
 
-def _download_with_retry(url: str, dest: Path) -> int:
-    for attempt in range(_TAXDUMP_DOWNLOAD_MAX_ATTEMPTS):
+def _call_http_with_retry[T](
+    func: Callable[[], T],
+    *,
+    label: str,
+    max_attempts: int,
+    backoff_base_sec: int,
+) -> T:
+    for attempt in range(max_attempts):
         try:
-            return _download_file(url, dest)
+            return func()
         except (urllib.error.URLError, OSError) as e:
-            if attempt == _TAXDUMP_DOWNLOAD_MAX_ATTEMPTS - 1:
+            if isinstance(e, urllib.error.HTTPError) and e.code == HTTPStatus.NOT_FOUND:
                 raise
-            wait_sec = _TAXDUMP_DOWNLOAD_BACKOFF_BASE_SEC ** (attempt + 1)
+            if attempt == max_attempts - 1:
+                raise
+            wait_sec = backoff_base_sec ** (attempt + 1)
             logger.warning(
                 "%s: attempt %d/%d failed (%s), retrying in %ds",
-                dest.name,
+                label,
                 attempt + 1,
-                _TAXDUMP_DOWNLOAD_MAX_ATTEMPTS,
+                max_attempts,
                 e,
                 wait_sec,
             )
             time.sleep(wait_sec)
     raise RuntimeError("unreachable")
+
+
+def _download_with_retry(url: str, dest: Path) -> int:
+    return _call_http_with_retry(
+        lambda: _download_file(url, dest),
+        label=dest.name,
+        max_attempts=_TAXDUMP_DOWNLOAD_MAX_ATTEMPTS,
+        backoff_base_sec=_TAXDUMP_DOWNLOAD_BACKOFF_BASE_SEC,
+    )
 
 
 def validate_taxdump_dir(taxdump_dir: Path) -> None:

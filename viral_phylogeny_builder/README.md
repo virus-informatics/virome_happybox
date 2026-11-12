@@ -262,6 +262,7 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 
 | Command            | Subcommand       | Description                                                   | Required options                                                          |
 | :----------------- | :--------------- | :------------------------------------------------------------ | :------------------------------------------------------------------------ |
+| `update-reference` | `fetch-taxdump`  | Download/update NCBI taxdump into `<output-dir>/taxdump`      | -                                                                         |
 | `update-reference` | `fetch-metadata` | Fetch NCBI virus metadata and select representative sequences | -                                                                         |
 | `update-reference` | `fetch-genome`   | Download reference genomes listed by `fetch-metadata`         | -                                                                         |
 | `build-reftree`    | `search`         | Extract RdRp sequences via getorf + MMseqs2                   | `--genome-fasta`, `--reference-metadata-csv`, `--rdrp-db`                 |
@@ -345,6 +346,17 @@ Error: Download error: stream error: stream ID 3; INTERNAL_ERROR; received from 
 NCBI may interrupt the download.
 Run the same `update-reference run` command again. Steps that already completed are skipped, and the interrupted download starts over from the beginning.
 
+### "URLError" in update-reference
+
+Downloading the NCBI taxdump failed, for example:
+
+```
+urllib.error.URLError: <urlopen error [Errno 8] nodename nor servname provided, or not known>
+```
+
+`fetch-taxdump` downloads the taxdump, and so do `fetch-metadata` and `run` when `<output-dir>/taxdump` lacks it or `--update-taxdump` is given.
+Run the same command again.
+
 ### "taxonkit name2taxid failed" in query
 
 Ensure the taxdump files exist in the `--taxdump-dir` passed to `query`:
@@ -394,6 +406,12 @@ Remove the outputs of earlier runs and downloaded reference trees from `referenc
 
 ```bash
 rm -rf reference/taxdump reference/update-reference reference/build-reftree
+```
+
+Download the NCBI taxdump, which all virus families share. If this fails, run it again until it succeeds before going on.
+
+```bash
+viral_phylogeny_builder update-reference fetch-taxdump
 ```
 
 Then run both commands for every virus family. `build-reftree run` is not run for a family whose `update-reference run` failed.
