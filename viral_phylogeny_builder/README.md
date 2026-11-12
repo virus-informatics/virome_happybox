@@ -334,6 +334,17 @@ conda activate viral_phylogeny_builder
 
 The `--rdrp-db` path does not exist. Set up the reference data as described in [Prerequisite: Setting Up Reference Data](#prerequisite-setting-up-reference-data) and check that `reference/rdrp_db/<VirusFamily>.rdrp.clean.fasta` exists for the target family.
 
+### "Download error" in update-reference
+
+`datasets`, which `update-reference` runs to download data from NCBI, failed, for example:
+
+```
+Error: Download error: stream error: stream ID 3; INTERNAL_ERROR; received from peer
+```
+
+NCBI may interrupt the download of a large virus family (e.g. the metadata of Coronaviridae exceeds 880 MB).
+Run the same `update-reference run` command again. Steps that already completed are skipped, and the interrupted download starts over from the beginning.
+
 ### "taxonkit name2taxid failed" in query
 
 Ensure the taxdump files exist in the `--taxdump-dir` passed to `query`:
@@ -383,15 +394,40 @@ Remove the outputs of earlier runs and downloaded reference trees from `referenc
 
 ```bash
 rm -rf reference/taxdump reference/update-reference reference/build-reftree
+```
 
+Then run both commands for every virus family. `build-reftree run` is not run for a family whose `update-reference run` failed.
+
+```bash
+ANY_FAILED=0
 for FASTA in reference/rdrp_db/*.rdrp.clean.fasta; do
   FAMILY=$(basename "${FASTA}" .rdrp.clean.fasta)
-  viral_phylogeny_builder update-reference run --virus-family "${FAMILY}"
+  viral_phylogeny_builder update-reference run --virus-family "${FAMILY}" &&
+    viral_phylogeny_builder build-reftree run --virus-family "${FAMILY}" \
+      --genome-fasta "reference/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna" \
+      --reference-metadata-csv "reference/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv" \
+      --rdrp-db "${FASTA}" &&
+    echo "${FAMILY}: success" ||
+    { echo "${FAMILY}: failed" >&2; ANY_FAILED=1; }
+done
+[ "${ANY_FAILED}" -eq 0 ] || echo "Some virus families failed. See the failed lines above." >&2
+```
+
+If any virus family failed, remove the incomplete files of that family and run both commands again for it.
+Steps that already completed are kept and skipped.
+
+```bash
+FAMILY=Coronaviridae  # The virus family that failed
+rm -rf reference/update-reference/fetch-*/"${FAMILY}"/*.partial \
+  reference/update-reference/fetch-genome/"${FAMILY}"/*.tmp \
+  reference/build-reftree/*/"${FAMILY}"/*.tmp \
+  reference/build-reftree/visualize/"${FAMILY}"
+
+viral_phylogeny_builder update-reference run --virus-family "${FAMILY}" &&
   viral_phylogeny_builder build-reftree run --virus-family "${FAMILY}" \
     --genome-fasta "reference/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna" \
     --reference-metadata-csv "reference/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv" \
-    --rdrp-db "${FASTA}"
-done
+    --rdrp-db "reference/rdrp_db/${FAMILY}.rdrp.clean.fasta"
 ```
 
 #### 2. Create the archives
