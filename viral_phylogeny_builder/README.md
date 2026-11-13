@@ -31,9 +31,9 @@ Extract all of them into `reference/`.
 
 The two releases are versioned independently, so their dates usually differ.
 Pick the latest [`reftree_YYYYMMDD` release](https://github.com/virus-informatics/virome_happybox/releases?q=reftree&expanded=true), and use the `rdrp_db_YYYYMMDD` release named in its release notes, which is the one the reference trees were built with.
+Replace `REFTREE_TAG` and `RDRP_DB_TAG` below with the actual tags from the release pages.
 
 ```bash
-# Replace with the actual tags from the release pages
 REFTREE_TAG=reftree_YYYYMMDD
 RDRP_DB_TAG=rdrp_db_YYYYMMDD
 
@@ -41,14 +41,12 @@ RELEASE_URL=https://github.com/virus-informatics/virome_happybox/releases/downlo
 
 mkdir -p reference
 
-# Reference Trees
 curl -fLO "${RELEASE_URL}/${REFTREE_TAG}/${REFTREE_TAG}.tar.gz"
 tar xzf "${REFTREE_TAG}.tar.gz" -C reference
 
 curl -fLO "${RELEASE_URL}/${REFTREE_TAG}/taxdump.tar.gz"
 tar xzf taxdump.tar.gz -C reference
 
-# Curated RdRp DB
 curl -fLO "${RELEASE_URL}/${RDRP_DB_TAG}/${RDRP_DB_TAG}.tar.gz"
 tar xzf "${RDRP_DB_TAG}.tar.gz" -C reference
 ```
@@ -206,15 +204,14 @@ viral_phylogeny_builder query <subcommand> --help
 For users who want to build their own reference phylogenetic trees, either from NCBI data or from a custom sequence dataset.
 
 Reference trees are built per virus family with `update-reference` followed by `build-reftree`.
+`update-reference run` fetches NCBI metadata and downloads representative reference genomes, and `build-reftree run` builds the reference tree.
 The Curated RdRp DB is required.
 
 ```bash
 FAMILY=Bornaviridae
 
-# 1. Fetch NCBI metadata and download representative reference genomes
 viral_phylogeny_builder update-reference run --virus-family ${FAMILY}
 
-# 2. Build the reference tree
 viral_phylogeny_builder build-reftree run --virus-family ${FAMILY} \
   --genome-fasta reference/update-reference/fetch-genome/${FAMILY}/reference_genomes/ncbi_dataset/data/genomic.fna \
   --reference-metadata-csv reference/update-reference/fetch-metadata/${FAMILY}/reference_metadata.csv \
@@ -301,10 +298,10 @@ Once extracted, `reference/` contains `update-reference/{fetch-metadata,fetch-ge
 For users who want to use specific versions or installations of external tools.
 
 When running outside the conda environment, the paths of external tools can be specified in a TOML file.
+Copy `config.example.toml` to `config.toml`, and set the paths of the tools that are not on PATH in it.
 
 ```bash
 cp config.example.toml config.toml
-# Edit config.toml to set the paths of tools that are not on PATH
 viral_phylogeny_builder query run --tool-config config.toml ...
 ```
 
@@ -431,15 +428,16 @@ done
 [ "${ANY_FAILED}" -eq 0 ] || echo "Some virus families failed. See the failed lines above." >&2
 ```
 
-If any virus family failed, remove the incomplete files of that family and run both commands again for it.
+If any virus family failed, set `FAMILY` to that virus family, remove its incomplete files, and run both commands again for it.
 Steps that already completed are kept and skipped.
+The removal runs in `bash -c`, since zsh, the default shell on macOS, stops the whole command when a pattern matches no files.
 
 ```bash
-FAMILY=Coronaviridae  # The virus family that failed
-rm -rf reference/update-reference/fetch-*/"${FAMILY}"/*.partial \
+FAMILY=Coronaviridae
+FAMILY="${FAMILY}" bash -c 'rm -rf reference/update-reference/fetch-*/"${FAMILY}"/*.partial \
   reference/update-reference/fetch-genome/"${FAMILY}"/*.tmp \
   reference/build-reftree/*/"${FAMILY}"/*.tmp \
-  reference/build-reftree/visualize/"${FAMILY}"
+  reference/build-reftree/visualize/"${FAMILY}"'
 
 viral_phylogeny_builder update-reference run --virus-family "${FAMILY}" &&
   viral_phylogeny_builder build-reftree run --virus-family "${FAMILY}" \
@@ -475,11 +473,12 @@ done
 Record the `rdrp_db_YYYYMMDD` release used in step 1 in the release notes, so that users can download the matching Curated RdRp DB.
 Make sure `reftree_assets/` contains only the archives created in step 2.
 GitHub Releases accept only files under 2 GiB; split any archive larger than that before uploading.
+Set `RDRP_DB_TAG` to the Curated RdRp DB release used to build the trees, and `NCBI_RETRIEVED_DATE` to the date `update-reference` was run.
+`DATE` is the one set in step 2.
 
 ```bash
-# Uses DATE from step 2 as is
-RDRP_DB_TAG=rdrp_db_YYYYMMDD  # The Curated RdRp DB release used to build the trees
-NCBI_RETRIEVED_DATE=YYYY-MM-DD  # The date update-reference was run
+RDRP_DB_TAG=rdrp_db_YYYYMMDD
+NCBI_RETRIEVED_DATE=YYYY-MM-DD
 git tag reftree_${DATE}
 git push origin reftree_${DATE}
 gh release create reftree_${DATE} \
