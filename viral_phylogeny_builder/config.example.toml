@@ -1,0 +1,25 @@
+# Tool path configuration for viral_phylogeny_builder.
+#
+# Copy this file to config.toml and uncomment the tools you need to override.
+# Only tools listed here will use the specified path; unlisted tools fall back
+# to PATH lookup.
+#
+# Usage:
+#   cp config.example.toml config.toml
+#   viral_phylogeny_builder update-reference fetch-metadata --tool-config config.toml ...
+#
+# The default --tool-config path is config.toml in the current directory.
+
+[tools]
+# datasets = "/path/to/datasets"
+# dataformat = "/path/to/dataformat"
+# taxonkit = "/path/to/taxonkit"
+# getorf = "/path/to/getorf"
+# mmseqs = "/path/to/mmseqs"
+# mafft = "/path/to/mafft"
+# trimal = "/path/to/trimal"
+# seqkit = "/path/to/seqkit"
+# iqtree = "/path/to/iqtree3"
+# Rscript = "/path/to/Rscript"
+# makeblastdb = "/path/to/makeblastdb"
+# blastp = "/path/to/blastp"

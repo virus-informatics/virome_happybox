@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Environment
+.venv/
+.cache/
+
+# macOS
+.DS_Store
+._*
+__MACOSX/
+
+# Default output
+output_dir/
+/reference/
+
+# Tool path configuration
+config.toml
+
+# Downloaded reference data assets
+/*.tar.gz
