@@ -135,6 +135,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default=15,
         help="Maximum tracks per figure (default: 15)",
     )
+    p_run.add_argument(
+        "--stack-contigs",
+        action="store_true",
+        help="Draw each contig in a separate lane (default: overlap contigs)",
+    )
 
     # --- blast ---
     p_blast = sub.add_parser("blast", help="Run tblastx (TSV output)")
@@ -185,6 +190,11 @@ def _build_parser() -> argparse.ArgumentParser:
         default=15,
         help="Maximum tracks per figure (default: 15)",
     )
+    p_vis.add_argument(
+        "--stack-contigs",
+        action="store_true",
+        help="Draw each contig in a separate lane (default: overlap contigs)",
+    )
 
     # --- update_refseq ---
     _add_update_refseq_subcommands(sub)
@@ -215,6 +225,7 @@ def _dispatch_run(args: argparse.Namespace) -> None:
         min_covered_bases=args.min_covered_bases,
         max_track_count=args.max_track_count,
         title=args.title,
+        stack_contigs=args.stack_contigs,
     )
     logger.info("Generated %d HTML figure(s)", len(html_paths))
 
@@ -255,6 +266,7 @@ def _dispatch_visualize(args: argparse.Namespace) -> None:
             min_covered_bases=args.min_covered_bases,
             max_track_count=args.max_track_count,
             title=args.title,
+            stack_contigs=args.stack_contigs,
         )
         all_html_paths.extend(html_paths)
     logger.info("Generated %d HTML figure(s)", len(all_html_paths))

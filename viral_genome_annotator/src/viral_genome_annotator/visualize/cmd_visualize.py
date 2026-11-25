@@ -255,6 +255,7 @@ def run_visualize(
     min_covered_bases: int = 500,
     max_track_count: int = 15,
     title: str | None = None,
+    stack_contigs: bool = False,
 ) -> list[Path]:
     """Run the full visualize pipeline for a single BLAST TSV and return written HTML paths."""
     gff3_path = refseq_dir / _ANNOTATIONS_GFF3_NAME
@@ -346,7 +347,12 @@ def run_visualize(
 
     # --- 8. Render HTML figures ---
     figures_dir = visualize_dir / _FIGURES_SUBDIR
-    html_paths = write_html_figures(plot_groups, figures_dir, title=title)
+    html_paths = write_html_figures(
+        plot_groups,
+        figures_dir,
+        title=title,
+        stack_contigs=stack_contigs,
+    )
 
     logger.info(
         "Visualize pipeline: %d figure(s), coverage CSV at %s, best-hit TSV at %s",

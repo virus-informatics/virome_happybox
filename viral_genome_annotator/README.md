@@ -53,7 +53,17 @@ This will:
 Open the resulting `.html` files in a browser to explore the genome annotation visualization.
 Each figure can also be saved as SVG via the camera icon in its toolbar.
 
-![Example figure (SRR11472191 vs GCF_050518205) exported as SVG](./example/figures/coverage_79.43_SRR11472191_Parvoviridae_GCF_050518205.svg)
+The default view shows overlapping contig hits.
+
+![Example figure with overlapping contigs (SRR11472191 vs GCF_050518205) exported as SVG](./example/figures/coverage_79.43_SRR11472191_Parvoviridae_GCF_050518205.svg)
+
+Add `--stack-contigs` to draw each contig in a separate lane.
+
+```bash
+viral_genome_annotator run -i example/SRR11472191_Parvoviridae.fasta --stack-contigs
+```
+
+![Example figure with stacked contigs (SRR11472191 vs GCF_050518205) exported as SVG](./example/figures/coverage_79.43_SRR11472191_Parvoviridae_GCF_050518205_stacked.svg)
 
 ## Quick Start
 
@@ -82,6 +92,7 @@ viral_genome_annotator run --help
 | `--title`             |    N     | auto-generated                                        | Figure title                         |
 | `--min-covered-bases` |    N     | `500`                                                 | Minimum covered bases to include     |
 | `--max-track-count`   |    N     | `15`                                                  | Maximum tracks per figure            |
+| `--stack-contigs`     |    N     | off                                                   | Draw each contig in a separate lane   |
 
 ## Running Individual Commands
 
@@ -114,7 +125,13 @@ viral_genome_annotator visualize
 
 # Specify BLAST TSV files explicitly
 viral_genome_annotator visualize -i SRR001.tblastx.tsv SRR002.tblastx.tsv
+
+# Draw each contig in a separate lane
+viral_genome_annotator visualize -i SRR001.tblastx.tsv --stack-contigs
 ```
+
+By default, contig hits are drawn at the same height and overlap.
+Pass `--stack-contigs` to `run` or `visualize` to give each contig its own lane within each reference sequence; multiple hits from the same contig share a lane.
 
 | Option                | Required | Default                    | Description                         |
 | :-------------------- | :------: | :------------------------- | :---------------------------------- |
@@ -124,6 +141,7 @@ viral_genome_annotator visualize -i SRR001.tblastx.tsv SRR002.tblastx.tsv
 | `--title`             |    N     | auto-generated             | Figure title                        |
 | `--min-covered-bases` |    N     | `500`                      | Minimum covered bases to include    |
 | `--max-track-count`   |    N     | `15`                       | Maximum tracks per figure           |
+| `--stack-contigs`     |    N     | off                        | Draw each contig in a separate lane  |
 
 ### Outputs
 

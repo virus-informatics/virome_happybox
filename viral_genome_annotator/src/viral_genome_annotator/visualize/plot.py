@@ -30,6 +30,7 @@ _GENOME_LINE_Y = (_CDS_BOX_Y_BOTTOM + 1.0) / 2
 _PIDENT_RECT_HEIGHT = 0.20
 _PIDENT_RECT_Y_BOTTOM = (_CDS_BOX_Y_BOTTOM - _PIDENT_RECT_HEIGHT) / 2
 _PIDENT_RECT_Y_TOP = _PIDENT_RECT_Y_BOTTOM + _PIDENT_RECT_HEIGHT
+_CONTIG_LANE_Y_STEP = _PIDENT_RECT_HEIGHT + 0.05
 _CDS_LABEL_FONT_SIZE_PX = 20
 _CDS_LABEL_CHAR_WIDTH_FACTOR = 0.6
 _CDS_LABEL_PLOT_WIDTH_PX = 700
@@ -81,6 +82,17 @@ def _track_label(sseqid: str, segment: str | None) -> str:
     return sseqid
 
 
+def _build_contig_lanes(hits: list[BlastHit]) -> dict[str, int]:
+    """Assign each contig a lane, ordered by its leftmost reference hit then ID."""
+    starts: dict[str, int] = {}
+    for hit in hits:
+        start = min(hit.sstart, hit.send)
+        starts[hit.qseqid] = min(starts.get(hit.qseqid, start), start)
+
+    qseqids = sorted(starts, key=lambda qseqid: (starts[qseqid], qseqid))
+    return {qseqid: lane for lane, qseqid in enumerate(qseqids)}
+
+
 def _cds_label_fits(product: str, cds_width_bp: int, slen: int) -> bool:
     """Estimate whether a product label fits inside a CDS box at initial zoom."""
     bp_per_px = slen / _CDS_LABEL_PLOT_WIDTH_PX
@@ -116,6 +128,7 @@ def _add_track(
     track: TrackData,
     row: int,
     *,
+    contig_lanes: dict[str, int],
     coverage_label: str | None = None,
 ) -> None:
     x_ref = "x" if row == 1 else f"x{row}"
@@ -137,17 +150,14 @@ def _add_track(
         sstart = min(hit.sstart, hit.send)
         send = max(hit.sstart, hit.send)
         color = _pident_to_color(hit.pident)
+        y_offset = contig_lanes.get(hit.qseqid, 0) * _CONTIG_LANE_Y_STEP
+        y_bottom = _PIDENT_RECT_Y_BOTTOM - y_offset
+        y_top = _PIDENT_RECT_Y_TOP - y_offset
 
         fig.add_trace(
             go.Scatter(
                 x=[sstart, send, send, sstart, sstart],
-                y=[
-                    _PIDENT_RECT_Y_BOTTOM,
-                    _PIDENT_RECT_Y_BOTTOM,
-                    _PIDENT_RECT_Y_TOP,
-                    _PIDENT_RECT_Y_TOP,
-                    _PIDENT_RECT_Y_BOTTOM,
-                ],
+                y=[y_bottom, y_bottom, y_top, y_top, y_bottom],
                 fill="toself",
                 fillcolor=color,
                 line=dict(width=0),
@@ -235,8 +245,13 @@ def _add_track(
         )
 
 
-def render_plot_group(group: PlotGroup, *, title: str | None = None) -> go.Figure:
-    """Render a single PlotGroup to a Plotly Figure."""
+def render_plot_group(
+    group: PlotGroup,
+    *,
+    title: str | None = None,
+    stack_contigs: bool = False,
+) -> go.Figure:
+    """Render a single PlotGroup, optionally separating contigs into lanes."""
     n_tracks = len(group.tracks)
 
     if n_tracks == 0:
@@ -244,12 +259,21 @@ def render_plot_group(group: PlotGroup, *, title: str | None = None) -> go.Figur
         fig.update_layout(title="No tracks")
         return fig
 
+    # An empty lane map keeps all contigs at the original overlapping position.
+    contig_lanes_by_track = [
+        _build_contig_lanes(track.hits) if stack_contigs else {} for track in group.tracks
+    ]
+    track_y_mins = [
+        -_CONTIG_LANE_Y_STEP * max(0, len(lanes) - 1) for lanes in contig_lanes_by_track
+    ]
+    # Extend downward while preserving the pixel height of hits and CDS boxes.
+    # Tracks with zero or one contig retain the original height and Y range.
+    track_heights = [round(_TRACK_CONTENT_HEIGHT_PX * (1.0 - y_min)) for y_min in track_y_mins]
+
     cds_legend_extra = (
         sum(len(t.cds_annotations) for t in group.tracks) * _CDS_LEGEND_ENTRY_HEIGHT_PX
     )
-    plot_area_height = (
-        n_tracks * _TRACK_CONTENT_HEIGHT_PX + max(0, n_tracks - 1) * _TRACK_SPACING_PX
-    )
+    plot_area_height = sum(track_heights) + max(0, n_tracks - 1) * _TRACK_SPACING_PX
     figure_height = _MARGIN_TOP_PX + plot_area_height + _MARGIN_BOTTOM_BASE_PX + cds_legend_extra
     if n_tracks > 1:
         vertical_spacing = _TRACK_SPACING_PX / plot_area_height
@@ -261,6 +285,7 @@ def render_plot_group(group: PlotGroup, *, title: str | None = None) -> go.Figur
         cols=1,
         shared_xaxes=False,
         vertical_spacing=vertical_spacing,
+        row_heights=track_heights,
     )
 
     coverage_label = (
@@ -271,11 +296,13 @@ def render_plot_group(group: PlotGroup, *, title: str | None = None) -> go.Figur
     for i, track in enumerate(group.tracks):
         row = i + 1
         label = _track_label(track.sseqid, track.segment)
+        y_min = track_y_mins[i]
 
         _add_track(
             fig,
             track,
             row,
+            contig_lanes=contig_lanes_by_track[i],
             coverage_label=coverage_label if i == 0 else None,
         )
 
@@ -295,16 +322,17 @@ def render_plot_group(group: PlotGroup, *, title: str | None = None) -> go.Figur
             showline=True,
         )
         fig.update_yaxes(
-            range=[0, 1],
+            range=[y_min, 1],
             row=row,
             col=1,
-            tickvals=[(_PIDENT_RECT_Y_BOTTOM + _PIDENT_RECT_Y_TOP) / 2],
+            tickvals=[(_PIDENT_RECT_Y_BOTTOM + _PIDENT_RECT_Y_TOP + y_min) / 2],
             ticktext=[label],
             tickfont=dict(size=26),
             linecolor="rgb(102,102,102)",
             linewidth=3,
             mirror=False,
             showgrid=False,
+            zeroline=False,
             showline=True,
         )
 
@@ -425,7 +453,11 @@ def _build_label_toggle_js(fig: go.Figure, div_id: str) -> str:
 
 
 def _add_colorbar(fig: go.Figure, *, n_tracks: int) -> None:
-    colorbar_len = 1.2 / n_tracks
+    # Keep the original pixel length even when contig lanes make the figure taller.
+    base_plot_area_height = (
+        n_tracks * _TRACK_CONTENT_HEIGHT_PX + (n_tracks - 1) * _TRACK_SPACING_PX
+    )
+    colorbar_height_px = 1.2 * base_plot_area_height / n_tracks
     fig.add_trace(
         go.Scatter(
             x=[None],
@@ -439,7 +471,8 @@ def _add_colorbar(fig: go.Figure, *, n_tracks: int) -> None:
                     title=dict(text="pident", font=dict(size=28)),
                     tickfont=dict(size=24),
                     thickness=40,
-                    len=colorbar_len,
+                    lenmode="pixels",
+                    len=colorbar_height_px,
                     x=1.02,
                     yanchor="top",
                     y=1.0,
@@ -461,6 +494,7 @@ def write_html_figures(
     output_dir: Path,
     *,
     title: str | None = None,
+    stack_contigs: bool = False,
 ) -> list[Path]:
     """Write one HTML file per PlotGroup. Returns list of written paths."""
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -471,7 +505,7 @@ def write_html_figures(
         if not group.tracks:
             continue
 
-        fig = render_plot_group(group, title=title)
+        fig = render_plot_group(group, title=title, stack_contigs=stack_contigs)
         coverage_tag = f"{group.coverage_pct:.2f}"
         stem_safe = _sanitize_filename(group.tsv_stem)
         family_safe = _sanitize_filename(group.family or "unknown_family")

@@ -1,6 +1,6 @@
 [project]
 name = "viral_genome_annotator"
-version = "1.0.0"
+version = "1.1.0"
 description = "Virome analysis — genome annotation visualization"
 readme = "README.md"
 authors = [
